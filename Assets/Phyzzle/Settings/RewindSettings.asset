@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dc1509827e664749b7cd0bd1d12bfa6, type: 3}
+  m_Name: RewindSettings
+  m_EditorClassIdentifier: Phyzzle.Runtime::Phyzzle.Abilities.Rewind.RewindSettings
+  historyDuration: 20
+  playbackRate: 1
+  recordPositionThreshold: 0.002
+  recordRotationThreshold: 0.0573
+  maxLinearSpeed: 50
+  maxAngularSpeed: 720
+  targetRayDistance: 20
+  nearbySearchRadius: 40
+  overlapBufferSize: 65
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  pauseWorldWhileTargeting: 1
+  selectionVisualEnterDuration: 0.14
+  selectionVisualExitDuration: 0.16
+  selectionWorldSaturation: 0.12
+  eligibleVisualColor: {r: 0.84313726, g: 0.64705884, b: 0.1764706, a: 1}
+  activeVisualColor: {r: 1, g: 0.83137256, b: 0.36078432, a: 1}
+  eligibleOutlinePixels: 1
+  activeOutlinePixels: 2.5
+  previewPathWidth: 0.06
+  previewPathMaxPoints: 256
+  previewGhostCount: 8
+  previewGhostAlpha: 0.28

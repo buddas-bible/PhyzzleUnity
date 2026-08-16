@@ -1,0 +1,19 @@
+{
+  "name": "Phyzzle.EditModeTests",
+  "rootNamespace": "Phyzzle.Tests",
+  "references": [
+    "Phyzzle.Runtime",
+    "Phyzzle.Editor",
+    "Unity.InputSystem",
+    "Unity.ugui",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

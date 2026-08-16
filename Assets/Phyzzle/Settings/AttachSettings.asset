@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31bf7f51da7939746ba65bc2ad0be5bc, type: 3}
+  m_Name: AttachSettings
+  m_EditorClassIdentifier: Phyzzle.Runtime::Phyzzle.Abilities.Attach.AttachSettings
+  overlapBufferSize: 65
+  nearbySearchRadius: 40
+  targetRayDistance: 20
+  nearbyMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  targetVerticalSpeed: 4
+  targetDepthStep: 1
+  minTargetY: -4
+  maxTargetY: 10
+  minTargetZ: 1
+  maxTargetZ: 20
+  targetPositionOffset: 1
+  holdMoveSpeed: 3
+  orbitDegreesPerSecond: 180
+  orbitArcRatio: 1.5
+  linearDampingRatio: 3
+  linearFrequency: 500
+  maxLinearAcceleration: 50
+  angularDampingRatio: 3.6
+  angularFrequency: 500
+  maxAngularAcceleration: 40
+  velocityDamping: 3
+  rotationStepDegrees: 45
+  fineAdjustmentSpeed: 45
+  selectedMass: 0.1
+  selectedInertiaTensor: {x: 100, y: 100, z: 100}
+  selectedPhysicsMaterial: {fileID: 13400000, guid: 5ae907fdc4f3b094cba277900ae89bf8, type: 2}

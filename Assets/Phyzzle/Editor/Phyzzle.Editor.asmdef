@@ -1,0 +1,13 @@
+{
+  "name": "Phyzzle.Editor",
+  "rootNamespace": "Phyzzle.Editor",
+  "references": [
+    "Phyzzle.Runtime",
+    "Unity.ugui",
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}

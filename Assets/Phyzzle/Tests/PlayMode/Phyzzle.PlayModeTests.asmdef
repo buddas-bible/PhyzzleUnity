@@ -1,0 +1,13 @@
+{
+  "name": "Phyzzle.PlayModeTests",
+  "rootNamespace": "Phyzzle.Tests",
+  "references": [
+    "Phyzzle.Runtime",
+    "Unity.InputSystem",
+    "Unity.InputSystem.TestFramework"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}
