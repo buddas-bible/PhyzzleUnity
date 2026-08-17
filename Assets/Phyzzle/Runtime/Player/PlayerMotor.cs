@@ -198,29 +198,50 @@ namespace Phyzzle.Player
             body.AddForce(
                 additionalVelocity + platformVelocity,
                 ForceMode.VelocityChange);
-                // LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
         }
 
         private void ApplyAirMovement(Vector2 input, Vector3 currentVelocity)
         {
-            Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(
+            Vector3 wishDirection = PlayerMovementMath.CameraRelativeDirection(
                 input,
                 movementReference.forward);
-            Vector3 targetVelocity = CalculateTargetVelocity(
-                input,
-                originDirection,
-                originDirection);
 
             if (IsFlying)
             {
+                Vector3 targetVelocity = CalculateTargetVelocity(
+                    input,
+                    wishDirection,
+                    wishDirection);
                 body.AddForce(targetVelocity, ForceMode.Force);
                 return;
             }
 
+            if (input.sqrMagnitude <= DirectionEpsilon ||
+                wishDirection.sqrMagnitude <= DirectionEpsilon)
+            {
+                return;
+            }
+
+            wishDirection.Normalize();
+
             Vector3 horizontalVelocity = currentVelocity;
             horizontalVelocity.y = 0f;
-            Vector3 additionalVelocity = targetVelocity - horizontalVelocity;
-            body.AddForce(additionalVelocity * body.mass, ForceMode.Force);
+
+            float wishSpeed = settings.airWishSpeed * input.magnitude;
+            float speedAlongWishDirection = Vector3.Dot(horizontalVelocity, wishDirection);
+            float speedRoom = wishSpeed - speedAlongWishDirection;
+            if (speedRoom <= 0f)
+            {
+                return;
+            }
+
+            float deltaSpeed = Mathf.Min(
+                speedRoom,
+                settings.airAcceleration * Time.fixedDeltaTime);
+
+            body.AddForce(
+                wishDirection * deltaSpeed,
+                ForceMode.VelocityChange);
         }
 
         private Vector3 CalculateTargetVelocity(
