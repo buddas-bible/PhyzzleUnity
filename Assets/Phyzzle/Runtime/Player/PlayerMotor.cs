@@ -151,53 +151,91 @@ namespace Phyzzle.Player
 
         private void ApplyMovement(Vector2 input)
         {
-            Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(input, movementReference.forward);
-            Vector3 direction = !IsFlying && IsOnStandableSlope
-                ? PlayerMovementMath.ProjectDirectionOnSlope(input, movementReference.forward, lastGroundNormal)
-                : originDirection;
-
-            float inputMagnitude = input.magnitude;
-            float movementSpeed = speedOverride >= 0f ? speedOverride : settings.moveSpeed;
-            Vector3 targetVelocity = Vector3.zero;
-            if (direction.sqrMagnitude > DirectionEpsilon)
-            {
-                float alignment = Vector3.Dot(direction, originDirection);
-                targetVelocity = direction * (movementSpeed * inputMagnitude * alignment);
-            }
-
             Vector3 currentVelocity = PlayerMovementMath.ClampVerticalSpeed(
                 body.linearVelocity,
                 settings.maxVerticalSpeed);
             body.linearVelocity = currentVelocity;
 
-            Vector3 horizontalVelocity = currentVelocity;
-            horizontalVelocity.y = 0f;
-            Vector3 additionalVelocity = targetVelocity - horizontalVelocity;
-
-            if (IsFlying)
+            if (IsGrounded && !IsFlying)
             {
-                body.AddForce(targetVelocity, ForceMode.Force);
-            }
-            else if (IsGrounded)
-            {
-                additionalVelocity.y = 0f;
-                body.AddForce(
-                    additionalVelocity + platformVelocity,
-                    ForceMode.VelocityChange);
-                    // LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
+                ApplyGroundMovement(input, currentVelocity);
             }
             else
             {
-                body.AddForce(additionalVelocity * body.mass, ForceMode.Force);
+                ApplyAirMovement(input, currentVelocity);
             }
 
             platformVelocity = Vector3.zero;
-            IsMoving = inputMagnitude >= 0.000001f;
+            IsMoving = input.magnitude >= 0.000001f;
 
             if (IsMoving && movementFacingEnabled)
             {
                 FaceMovementDirection(body.linearVelocity);
             }
+        }
+
+        private void ApplyGroundMovement(Vector2 input, Vector3 currentVelocity)
+        {
+            Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(
+                input,
+                movementReference.forward);
+            Vector3 direction = IsOnStandableSlope
+                ? PlayerMovementMath.ProjectDirectionOnSlope(
+                    input,
+                    movementReference.forward,
+                    lastGroundNormal)
+                : originDirection;
+            Vector3 targetVelocity = CalculateTargetVelocity(
+                input,
+                originDirection,
+                direction);
+
+            Vector3 horizontalVelocity = currentVelocity;
+            horizontalVelocity.y = 0f;
+            Vector3 additionalVelocity = targetVelocity - horizontalVelocity;
+            additionalVelocity.y = 0f;
+
+            body.AddForce(
+                additionalVelocity + platformVelocity,
+                ForceMode.VelocityChange);
+                // LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
+        }
+
+        private void ApplyAirMovement(Vector2 input, Vector3 currentVelocity)
+        {
+            Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(
+                input,
+                movementReference.forward);
+            Vector3 targetVelocity = CalculateTargetVelocity(
+                input,
+                originDirection,
+                originDirection);
+
+            if (IsFlying)
+            {
+                body.AddForce(targetVelocity, ForceMode.Force);
+                return;
+            }
+
+            Vector3 horizontalVelocity = currentVelocity;
+            horizontalVelocity.y = 0f;
+            Vector3 additionalVelocity = targetVelocity - horizontalVelocity;
+            body.AddForce(additionalVelocity * body.mass, ForceMode.Force);
+        }
+
+        private Vector3 CalculateTargetVelocity(
+            Vector2 input,
+            Vector3 originDirection,
+            Vector3 direction)
+        {
+            if (direction.sqrMagnitude <= DirectionEpsilon)
+            {
+                return Vector3.zero;
+            }
+
+            float movementSpeed = speedOverride >= 0f ? speedOverride : settings.moveSpeed;
+            float alignment = Vector3.Dot(direction, originDirection);
+            return direction * (movementSpeed * input.magnitude * alignment);
         }
 
         private void FaceMovementDirection(Vector3 worldVelocity)
