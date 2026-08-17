@@ -12,6 +12,10 @@ namespace Phyzzle.Player
         [Min(0f)] public float maxVerticalSpeed = 30f;
         [Range(0f, 89f)] public float slopeLimitDegrees = 45f;
 
+        [Header("Air control")]
+        [Min(0f)] public float airWishSpeed = 2.5f;
+        [Min(0f)] public float airAcceleration = 8f;
+
         [Header("Ground probe")]
         [Min(0.01f)] public float groundProbeDistance = 1f;
         [Min(0f)] public float groundProbeRadius = 0.15f;
