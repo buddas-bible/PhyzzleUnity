@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using Phyzzle.Abilities.Rewind;
 using Phyzzle.Player;
@@ -103,6 +104,94 @@ namespace Phyzzle.Tests
 
             Assert.That(body.position.z, Is.GreaterThan(initialZ + 0.01f));
             Assert.That(motor.IsMoving, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator TickFixed_GroundedInputRelease_StopsHorizontalLocomotionWithinOnePhysicsStep()
+        {
+            body.linearVelocity = Vector3.forward * settings.moveSpeed;
+
+            motor.TickFixed(Vector2.zero, false, true);
+            yield return new WaitForFixedUpdate();
+
+            Vector3 horizontalVelocity = Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up);
+            TestContext.WriteLine($"GroundRelease horizontalSpeed={horizontalVelocity.magnitude}");
+            Assert.That(horizontalVelocity.magnitude, Is.LessThan(0.05f));
+        }
+
+        [UnityTest]
+        public IEnumerator TickFixed_AirborneNoInput_DecaysExistingHorizontalVelocity_Baseline()
+        {
+            yield return PrepareAirborne(Vector3.right * 10f);
+
+            const int physicsSteps = 50;
+            for (int i = 0; i < physicsSteps; i++)
+            {
+                motor.TickFixed(Vector2.zero, false, true);
+                yield return new WaitForFixedUpdate();
+            }
+
+            float expectedSpeed = 10f * Mathf.Pow(1f - Time.fixedDeltaTime, physicsSteps);
+            float actualSpeed = Mathf.Abs(body.linearVelocity.x);
+            TestContext.WriteLine(
+                $"AirNoInput initialSpeed=10; steps={physicsSteps}; " +
+                $"expected={expectedSpeed}; actual={actualSpeed}");
+
+            Assert.That(actualSpeed, Is.EqualTo(expectedSpeed).Within(0.15f));
+        }
+
+        [UnityTest]
+        public IEnumerator TickFixed_AirborneForwardInput_AcceleratesTowardMoveSpeed_Baseline()
+        {
+            yield return PrepareAirborne(Vector3.zero);
+
+            const int physicsSteps = 25;
+            for (int i = 0; i < physicsSteps; i++)
+            {
+                motor.TickFixed(Vector2.up, false, true);
+                yield return new WaitForFixedUpdate();
+            }
+
+            float expectedSpeed = settings.moveSpeed *
+                (1f - Mathf.Pow(1f - Time.fixedDeltaTime, physicsSteps));
+            float actualSpeed = body.linearVelocity.z;
+            TestContext.WriteLine(
+                $"AirForward steps={physicsSteps}; expected={expectedSpeed}; actual={actualSpeed}");
+
+            Assert.That(actualSpeed, Is.EqualTo(expectedSpeed).Within(0.15f));
+        }
+
+        [UnityTest]
+        public IEnumerator TickFixed_FlyingNoInput_PreservesMoreHorizontalVelocityThanNormalAir_Baseline()
+        {
+            yield return PrepareAirborne(Vector3.right * 10f);
+
+            const int physicsSteps = 25;
+            for (int i = 0; i < physicsSteps; i++)
+            {
+                motor.TickFixed(Vector2.zero, false, true);
+                yield return new WaitForFixedUpdate();
+            }
+
+            float normalAirSpeed = Mathf.Abs(body.linearVelocity.x);
+
+            body.position = Vector3.up * 10f;
+            body.linearVelocity = Vector3.right * 10f;
+            Physics.SyncTransforms();
+            SetFlyingTimeRemaining(1f);
+
+            for (int i = 0; i < physicsSteps; i++)
+            {
+                motor.TickFixed(Vector2.zero, false, true);
+                yield return new WaitForFixedUpdate();
+            }
+
+            float flyingSpeed = Mathf.Abs(body.linearVelocity.x);
+            TestContext.WriteLine(
+                $"AirVsFlying steps={physicsSteps}; normalAir={normalAirSpeed}; flying={flyingSpeed}");
+
+            Assert.That(flyingSpeed, Is.GreaterThan(normalAirSpeed + 2f));
+            Assert.That(flyingSpeed, Is.EqualTo(10f).Within(0.1f));
         }
 
         [UnityTest]
@@ -277,6 +366,32 @@ namespace Phyzzle.Tests
                 $"({finalLocalPosition.x},{finalLocalPosition.z}); localDelta={localDisplacement}");
             Assert.That(platformCenterDisplacement, Is.LessThan(0.01f));
             Assert.That(tangentialDisplacement, Is.GreaterThan(0.1f));
+        }
+
+        private IEnumerator PrepareAirborne(Vector3 initialVelocity)
+        {
+            ground.SetActive(false);
+            body.useGravity = false;
+            body.position = Vector3.up * 10f;
+            body.linearVelocity = Vector3.zero;
+            Physics.SyncTransforms();
+
+            yield return new WaitForFixedUpdate();
+            yield return new WaitForFixedUpdate();
+
+            motor.TickFixed(Vector2.zero, false, false);
+            Assert.That(motor.IsGrounded, Is.False, "Player should be airborne for movement baseline tests.");
+            body.linearVelocity = initialVelocity;
+        }
+
+        private void SetFlyingTimeRemaining(float seconds)
+        {
+            FieldInfo field = typeof(PlayerMotor).GetField(
+                "flyingTimeRemaining",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(field, Is.Not.Null, "PlayerMotor flyingTimeRemaining field was not found.");
+            field.SetValue(motor, seconds);
         }
 
         private PhysicsMaterial CreateZeroFrictionMaterial()
