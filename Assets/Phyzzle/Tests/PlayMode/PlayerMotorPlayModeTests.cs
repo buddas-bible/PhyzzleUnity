@@ -370,12 +370,16 @@ namespace Phyzzle.Tests
 
         private IEnumerator PrepareAirborne(Vector3 initialVelocity)
         {
+            PlayerGroundSensor sensor = playerObject.GetComponentInChildren<PlayerGroundSensor>();
+            sensor.enabled = false;
+
             ground.SetActive(false);
             body.useGravity = false;
             body.position = Vector3.up * 10f;
             body.linearVelocity = Vector3.zero;
             Physics.SyncTransforms();
 
+            sensor.enabled = true;
             yield return new WaitForFixedUpdate();
             yield return new WaitForFixedUpdate();
 
