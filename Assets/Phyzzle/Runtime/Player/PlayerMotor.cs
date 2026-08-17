@@ -183,7 +183,8 @@ namespace Phyzzle.Player
                 additionalVelocity.y = 0f;
                 body.AddForce(
                     additionalVelocity + platformVelocity,
-                    LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
+                    ForceMode.VelocityChange);
+                    // LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
             }
             else
             {
