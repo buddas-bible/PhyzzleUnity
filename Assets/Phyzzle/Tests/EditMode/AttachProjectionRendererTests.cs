@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using Phyzzle.Abilities.Attach;
 using UnityEngine;
@@ -51,6 +53,35 @@ namespace Phyzzle.Tests
                 hit, Vector3.forward, 0.15f, out _);
 
             Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void SetIsland_RetainsMeshFiltersFromEveryMember()
+        {
+            GameObject projectionObject = new("Projection");
+            GameObject firstObject = new("First");
+            GameObject secondObject = new("Second");
+            try
+            {
+                AttachProjectionRenderer projection = projectionObject.AddComponent<AttachProjectionRenderer>();
+                MeshFilter firstFilter = firstObject.AddComponent<MeshFilter>();
+                MeshFilter secondFilter = secondObject.AddComponent<MeshFilter>();
+                AttachableObject first = firstObject.AddComponent<AttachableObject>();
+                AttachableObject second = secondObject.AddComponent<AttachableObject>();
+
+                projection.SetIsland(new List<AttachableObject> { first, second });
+
+                FieldInfo field = typeof(AttachProjectionRenderer).GetField(
+                    "meshFilters", BindingFlags.Instance | BindingFlags.NonPublic);
+                List<MeshFilter> cached = (List<MeshFilter>)field.GetValue(projection);
+                Assert.That(cached, Is.EquivalentTo(new[] { firstFilter, secondFilter }));
+            }
+            finally
+            {
+                Object.DestroyImmediate(projectionObject);
+                Object.DestroyImmediate(firstObject);
+                Object.DestroyImmediate(secondObject);
+            }
         }
 
         [Test]

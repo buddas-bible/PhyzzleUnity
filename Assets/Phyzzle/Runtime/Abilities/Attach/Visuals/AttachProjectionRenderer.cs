@@ -12,17 +12,23 @@ namespace Phyzzle.Abilities.Attach
         private readonly List<MeshFilter> meshFilters = new();
         private readonly List<Renderer> renderers = new();
         private readonly List<Collider> colliders = new();
-        private readonly MaterialPropertyBlock[] projectionProperties =
-        {
-            new(), new(), new(), new(), new()
-        };
+        private readonly List<MeshFilter> meshFilterScratch = new();
+        private readonly List<Renderer> rendererScratch = new();
+        private readonly List<Collider> colliderScratch = new();
 
         private Camera camera;
         private AttachSettings settings;
         private Material projectionMaterial;
+        private MaterialPropertyBlock[] projectionProperties;
         private Vector3 lastPlanarForward;
 
         internal int LastSubmittedDrawCount { get; private set; }
+
+        private void Awake()
+        {
+            projectionProperties = new[] { new MaterialPropertyBlock(), new MaterialPropertyBlock(),
+                new MaterialPropertyBlock(), new MaterialPropertyBlock(), new MaterialPropertyBlock() };
+        }
 
         public void Configure(Camera targetCamera, AttachSettings targetSettings, Material targetProjectionMaterial)
         {
@@ -47,9 +53,17 @@ namespace Phyzzle.Abilities.Attach
                     continue;
                 }
 
-                member.GetComponentsInChildren(true, meshFilters);
-                member.GetComponentsInChildren(true, renderers);
-                member.GetComponentsInChildren(true, colliders);
+                meshFilterScratch.Clear();
+                member.GetComponentsInChildren(true, meshFilterScratch);
+                meshFilters.AddRange(meshFilterScratch);
+
+                rendererScratch.Clear();
+                member.GetComponentsInChildren(true, rendererScratch);
+                renderers.AddRange(rendererScratch);
+
+                colliderScratch.Clear();
+                member.GetComponentsInChildren(true, colliderScratch);
+                colliders.AddRange(colliderScratch);
             }
 
             RemoveDuplicates(meshFilters);
@@ -60,7 +74,8 @@ namespace Phyzzle.Abilities.Attach
         internal void Submit()
         {
             LastSubmittedDrawCount = 0;
-            if (camera == null || settings == null || projectionMaterial == null || !HasSourceMesh())
+            if (camera == null || settings == null || projectionMaterial == null || projectionProperties == null ||
+                !HasSourceMesh())
             {
                 return;
             }
@@ -89,6 +104,9 @@ namespace Phyzzle.Abilities.Attach
             meshFilters.Clear();
             renderers.Clear();
             colliders.Clear();
+            meshFilterScratch.Clear();
+            rendererScratch.Clear();
+            colliderScratch.Clear();
             LastSubmittedDrawCount = 0;
         }
 
