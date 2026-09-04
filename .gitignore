@@ -22,5 +22,6 @@
 /[Rr]ecordings/
 
 # Local AI / development tooling
+.worktrees/
 .superpowers/
 docs/superpowers/
