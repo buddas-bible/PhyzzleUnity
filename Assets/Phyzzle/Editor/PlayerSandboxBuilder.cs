@@ -35,6 +35,8 @@ namespace Phyzzle.Editor
             RewindSettings rewindSettings = LoadOrCreate<RewindSettings>(RewindSettingsPath);
             RewindVisualAssets rewindVisualAssets = RewindVisualAssetBuilder.EnsureMaterials();
             RewindVisualAssetBuilder.EnsurePcRendererFeature(rewindVisualAssets);
+            AttachVisualAssets attachVisualAssets = AttachVisualAssetBuilder.EnsureMaterials();
+            AttachVisualAssetBuilder.EnsurePcRendererFeature(attachVisualAssets);
             attachSettings.selectedPhysicsMaterial = LoadOrCreateSelectedPhysicsMaterial();
 
             movementSettings.groundMask = UnityEngine.Physics.DefaultRaycastLayers;
@@ -60,7 +62,8 @@ namespace Phyzzle.Editor
                 rewindSettings,
                 attachmentService,
                 rewindCoordinator,
-                rewindVisualAssets.Preview);
+                rewindVisualAssets.Preview,
+                attachVisualAssets.Projection);
             CreateAttachable(
                 "Attachable_A",
                 new Vector3(0f, 5f, 6f),
@@ -114,7 +117,8 @@ namespace Phyzzle.Editor
             RewindSettings rewindSettings,
             AttachmentService attachmentService,
             RewindCoordinator rewindCoordinator,
-            Material rewindPreviewMaterial)
+            Material rewindPreviewMaterial,
+            Material attachProjectionMaterial)
         {
             GameObject root = new("PhyzzlePlayer");
             root.transform.position = new Vector3(0f, 0.1f, 0f);
@@ -143,7 +147,7 @@ namespace Phyzzle.Editor
             GameObject cameraCoreObject = new("CameraCore");
             cameraCoreObject.transform.SetParent(cameraArmObject.transform, false);
             cameraCoreObject.transform.localPosition = new Vector3(0f, 0f, -4f);
-            cameraCoreObject.AddComponent<Camera>();
+            Camera gameplayCamera = cameraCoreObject.AddComponent<Camera>();
             cameraCoreObject.AddComponent<AudioListener>();
 
             PlayerInputReader input = root.AddComponent<PlayerInputReader>();
@@ -163,6 +167,15 @@ namespace Phyzzle.Editor
             targeting.Configure(cameraArmObject.transform, cameraCoreObject.transform, attachSettings);
             holdController.Configure(modelRoot, body, attachmentService, attachSettings);
             attachAbility.Configure(motor, cameraRig, targeting, holdController, attachSettings);
+            EnsureAttachVisualComponents(
+                root,
+                gameplayCamera,
+                attachAbility,
+                targeting,
+                holdController,
+                attachmentService,
+                attachSettings,
+                attachProjectionMaterial);
             rewindTargeting.Configure(
                 cameraArmObject.transform,
                 cameraCoreObject.transform,
@@ -204,6 +217,35 @@ namespace Phyzzle.Editor
                 AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PcPipelinePath));
             EditorUtility.SetDirty(controller);
             return controller;
+        }
+
+        public static AttachVisualController EnsureAttachVisualComponents(
+            GameObject player,
+            Camera gameplayCamera,
+            AttachAbilityController attachAbility,
+            AttachTargeting targeting,
+            AttachHoldController holdController,
+            AttachmentService attachmentService,
+            AttachSettings attachSettings,
+            Material projectionMaterial)
+        {
+            AttachProjectionRenderer projection =
+                player.GetComponent<AttachProjectionRenderer>() ??
+                player.AddComponent<AttachProjectionRenderer>();
+            AttachVisualController visuals =
+                player.GetComponent<AttachVisualController>() ??
+                player.AddComponent<AttachVisualController>();
+            projection.Configure(gameplayCamera, attachSettings, projectionMaterial);
+            visuals.Configure(
+                attachAbility,
+                targeting,
+                holdController,
+                attachmentService,
+                projection,
+                attachSettings);
+            EditorUtility.SetDirty(projection);
+            EditorUtility.SetDirty(visuals);
+            return visuals;
         }
 
         private static AttachmentService CreateAttachmentService(AttachSettings settings)

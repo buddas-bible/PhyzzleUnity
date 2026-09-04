@@ -16,9 +16,9 @@ namespace Phyzzle.Abilities.Attach
         private readonly List<Renderer> rendererScratch = new();
         private readonly List<Collider> colliderScratch = new();
 
-        private Camera camera;
-        private AttachSettings settings;
-        private Material projectionMaterial;
+        [SerializeField] private Camera camera;
+        [SerializeField] private AttachSettings settings;
+        [SerializeField] private Material projectionMaterial;
         private MaterialPropertyBlock[] projectionProperties;
         private Vector3 lastPlanarForward;
 
