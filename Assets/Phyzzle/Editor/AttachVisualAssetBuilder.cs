@@ -66,6 +66,8 @@ namespace Phyzzle.Editor
                 throw new ArgumentNullException(nameof(rendererData));
             }
 
+            ValidatePersistentRendererFeatures(rendererData);
+
             AttachRenderFeature[] existing =
                 rendererData.rendererFeatures.OfType<AttachRenderFeature>().ToArray();
             if (existing.Length > 1)
@@ -113,6 +115,23 @@ namespace Phyzzle.Editor
             }
 
             return feature;
+        }
+
+        private static void ValidatePersistentRendererFeatures(
+            UniversalRendererData rendererData)
+        {
+            for (int index = 0; index < rendererData.rendererFeatures.Count; index++)
+            {
+                ScriptableRendererFeature feature = rendererData.rendererFeatures[index];
+                if (feature == null || !AssetDatabase.TryGetGUIDAndLocalFileIdentifier(
+                        feature,
+                        out _,
+                        out long _))
+                {
+                    throw new InvalidOperationException(
+                        $"Renderer feature {index} has no persistent local file ID.");
+                }
+            }
         }
 
         private static bool MoveAfterLastRewindFeature(
