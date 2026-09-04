@@ -110,6 +110,41 @@ namespace Phyzzle.Tests
             Assert.That(secondaryPixel.g, Is.LessThan(PlatformColor.g + 0.06f));
         }
 
+        [Test]
+        public void Projection_OrthographicDepthSeparatedReceiverWithinToleranceMatchesProjectionPlane()
+        {
+            primaryCamera.farClipPlane = 8.2f;
+            platform.SetActive(false);
+            GameObject deeperReceiver = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Material deeperMaterial = new(platformMaterial)
+            {
+                color = new Color(0.5f, 0.08f, 0.04f, 1f)
+            };
+            try
+            {
+                deeperReceiver.transform.position = new Vector3(0f, -0.054f, 0f);
+                deeperReceiver.transform.localScale = new Vector3(0.8f, 0.02f, 0.8f);
+                deeperReceiver.GetComponent<Renderer>().sharedMaterial = deeperMaterial;
+
+                primaryCamera.Render();
+                Color baseline = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+                Assert.That(baseline.r, Is.GreaterThan(0.2f),
+                    "The test must sample a real depth-separated opaque receiver, not the background.");
+                SubmitToPrimaryCamera();
+                primaryCamera.Render();
+
+                Color pixel = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+                Debug.Log($"Attach projection orthographic depth-tolerance pixel: {pixel}");
+                Assert.That(pixel.g, Is.GreaterThan(pixel.r + 0.12f),
+                    "An orthographic receiver inside the configured depth tolerance must retain the projection.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(deeperReceiver);
+                Object.DestroyImmediate(deeperMaterial);
+            }
+        }
+
         private void SubmitToPrimaryCamera()
         {
             MaterialPropertyBlock properties = new();

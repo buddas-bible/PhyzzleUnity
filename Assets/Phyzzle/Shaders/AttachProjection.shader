@@ -53,12 +53,19 @@ Shader "Phyzzle/AttachProjection"
                 return output;
             }
 
+            float ToEyeDepth(float rawDepth)
+            {
+                return unity_OrthoParams.w == 0
+                    ? LinearEyeDepth(rawDepth, _ZBufferParams)
+                    : LinearDepthToEyeDepth(rawDepth);
+            }
+
             float4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float2 uv = GetNormalizedScreenSpaceUV(input.positionCS);
-                float sceneDepth = LinearEyeDepth(SampleSceneDepth(uv), _ZBufferParams);
-                float fragmentDepth = LinearEyeDepth(input.positionCS.z, _ZBufferParams);
+                float sceneDepth = ToEyeDepth(SampleSceneDepth(uv));
+                float fragmentDepth = ToEyeDepth(input.positionCS.z);
                 clip(_AttachProjectionDepthTolerance - abs(sceneDepth - fragmentDepth));
                 return float4(_AttachHeldColor.rgb, _AttachHeldColor.a * _AttachProjectionOpacity);
             }
