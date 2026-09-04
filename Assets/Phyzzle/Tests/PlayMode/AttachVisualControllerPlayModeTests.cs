@@ -24,6 +24,8 @@ namespace Phyzzle.Tests
         private AttachVisualController controller;
         private AttachableObject first;
         private AttachableObject second;
+        private readonly List<GameObject> extraObjects = new();
+        private Material projectionMaterial;
 
         [SetUp]
         public void SetUp()
@@ -69,6 +71,15 @@ namespace Phyzzle.Tests
             Object.Destroy(projectionObject);
             Object.Destroy(serviceObject);
             Object.Destroy(settings);
+            for (int i = 0; i < extraObjects.Count; i++)
+            {
+                Object.Destroy(extraObjects[i]);
+            }
+
+            if (projectionMaterial != null)
+            {
+                Object.Destroy(projectionMaterial);
+            }
             yield return null;
         }
 
@@ -137,23 +148,25 @@ namespace Phyzzle.Tests
         [Test]
         public void VisualTick_DoesNotChangePhysicsMaterialsTransformsOrAttachState()
         {
-            Rigidbody body = first.Body;
-            Collider collider = firstObject.GetComponent<Collider>();
-            Vector3 position = firstObject.transform.position;
-            Quaternion rotation = firstObject.transform.rotation;
-            float mass = body.mass;
-            bool gravity = body.useGravity;
-            PhysicsMaterial material = collider.sharedMaterial;
             EnterSelecting(first, first, second);
+            VisualSnapshot selecting = CaptureVisualSnapshot(AttachAbilityController.AbilityState.Selecting);
 
             controller.TickVisual(1f);
 
-            Assert.That(firstObject.transform.position, Is.EqualTo(position));
-            Assert.That(firstObject.transform.rotation, Is.EqualTo(rotation));
-            Assert.That(body.mass, Is.EqualTo(mass));
-            Assert.That(body.useGravity, Is.EqualTo(gravity));
-            Assert.That(collider.sharedMaterial, Is.SameAs(material));
-            Assert.That(ability.State, Is.EqualTo(AttachAbilityController.AbilityState.Selecting));
+            AssertVisualSnapshotUnchanged(selecting);
+            Assert.That(service.Attach(first, second, Vector3.right), Is.True);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            VisualSnapshot holding = CaptureVisualSnapshot(AttachAbilityController.AbilityState.Holding);
+
+            controller.TickVisual(1f);
+
+            AssertVisualSnapshotUnchanged(holding);
+            ability.ReturnToDefault();
+            VisualSnapshot exit = CaptureVisualSnapshot(AttachAbilityController.AbilityState.Default);
+            controller.TickVisual(0.08f);
+            AssertVisualSnapshotUnchanged(exit);
+            controller.TickVisual(0.08f);
+            AssertVisualSnapshotUnchanged(exit);
         }
 
         [Test]
@@ -222,17 +235,58 @@ namespace Phyzzle.Tests
         public void SkinnedRenderer_IsHighlightedButNeverAddedToProjectionMeshes()
         {
             Mesh mesh = firstObject.GetComponent<MeshFilter>().sharedMesh;
-            GameObject skinnedObject = new("Skinned");
-            skinnedObject.transform.SetParent(firstObject.transform, false);
-            SkinnedMeshRenderer skinned = skinnedObject.AddComponent<SkinnedMeshRenderer>();
-            skinned.sharedMesh = mesh;
-            EnterSelecting(first, first);
+            AttachableObject skinnedOnly = CreateSkinnedAttachable(mesh, out SkinnedMeshRenderer skinned);
+            Camera camera = CreateProjectionCamera();
+            projectionMaterial = new Material(FindProjectionTestShader());
+            projection.Configure(camera, settings, projectionMaterial);
+            EnterSelecting(skinnedOnly, skinnedOnly);
             Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            SetLastSubmittedDrawCount(17);
 
             controller.TickVisual(1f);
 
             AssertRole(skinned, AttachVisualLayers.Held);
-            Assert.That(GetProjectionMeshFilters(), Has.None.EqualTo(skinned));
+            Assert.That(GetProjectionMeshFilters(), Is.Empty);
+            Assert.That(GetProjectionRenderers(), Has.Member(skinned));
+            Assert.That(projection.LastSubmittedDrawCount, Is.Zero,
+                "Submit resets the sentinel, then safely returns because a skinned-only island has no MeshFilter source.");
+        }
+
+        [Test]
+        public void TopologyVersion_ChangesOnlyForGraphMutations()
+        {
+            int version = service.TopologyVersion;
+            service.Register(first);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+
+            AttachableObject unknown = CreateInactiveAttachable("Unknown");
+            service.Unregister(unknown);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+
+            AttachableObject registered = CreateInactiveAttachable("Registered");
+            service.Register(registered);
+            Assert.That(service.TopologyVersion, Is.EqualTo(++version));
+            service.Register(registered);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+
+            Assert.That(service.Attach(first, first, Vector3.zero), Is.False);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+            Assert.That(service.Attach(first, second, Vector3.right), Is.True);
+            Assert.That(service.TopologyVersion, Is.EqualTo(++version));
+            Assert.That(service.GetIsland(first).Count, Is.EqualTo(2));
+            Assert.That(service.Attach(first, second, Vector3.right), Is.False);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+
+            Assert.That(service.Detach(registered), Is.False);
+            Assert.That(service.TopologyVersion, Is.EqualTo(version));
+            Assert.That(service.Detach(first), Is.True);
+            Assert.That(service.TopologyVersion, Is.EqualTo(++version));
+            Assert.That(service.GetIsland(first).Count, Is.EqualTo(1));
+            Assert.That(service.GetIsland(second).Count, Is.EqualTo(1));
+
+            service.Unregister(registered);
+            Assert.That(service.TopologyVersion, Is.EqualTo(++version));
         }
 
         private AttachableObject CreateAttachableCube(string name, Vector3 position, out GameObject target)
@@ -256,6 +310,47 @@ namespace Phyzzle.Tests
         {
             Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
             return renderers[1];
+        }
+
+        private AttachableObject CreateSkinnedAttachable(Mesh mesh, out SkinnedMeshRenderer skinned)
+        {
+            GameObject target = new("Skinned Only");
+            extraObjects.Add(target);
+            Rigidbody body = target.AddComponent<Rigidbody>();
+            body.useGravity = false;
+            AttachableObject attachable = target.AddComponent<AttachableObject>();
+            attachable.Configure(service);
+            skinned = target.AddComponent<SkinnedMeshRenderer>();
+            skinned.sharedMesh = mesh;
+            return attachable;
+        }
+
+        private Camera CreateProjectionCamera()
+        {
+            GameObject cameraObject = new("Projection Camera");
+            extraObjects.Add(cameraObject);
+            return cameraObject.AddComponent<Camera>();
+        }
+
+        private AttachableObject CreateInactiveAttachable(string name)
+        {
+            GameObject target = new(name);
+            target.SetActive(false);
+            extraObjects.Add(target);
+            target.AddComponent<Rigidbody>();
+            return target.AddComponent<AttachableObject>();
+        }
+
+        private static Shader FindProjectionTestShader()
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+            {
+                shader = Shader.Find("Unlit/Color");
+            }
+
+            Assert.That(shader, Is.Not.Null);
+            return shader;
         }
 
         private void EnterSelecting(AttachableObject current, params AttachableObject[] nearby)
@@ -286,9 +381,197 @@ namespace Phyzzle.Tests
             return (List<MeshFilter>)field.GetValue(projection);
         }
 
+        private List<Renderer> GetProjectionRenderers()
+        {
+            FieldInfo field = typeof(AttachProjectionRenderer).GetField("renderers",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field, Is.Not.Null);
+            return (List<Renderer>)field.GetValue(projection);
+        }
+
+        private void SetLastSubmittedDrawCount(int value)
+        {
+            FieldInfo field = typeof(AttachProjectionRenderer).GetField("<LastSubmittedDrawCount>k__BackingField",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(field, Is.Not.Null);
+            field.SetValue(projection, value);
+        }
+
+        private VisualSnapshot CaptureVisualSnapshot(AttachAbilityController.AbilityState state)
+        {
+            return new VisualSnapshot(first, second, state);
+        }
+
+        private void AssertVisualSnapshotUnchanged(VisualSnapshot snapshot)
+        {
+            Assert.That(ability.State, Is.EqualTo(snapshot.State));
+            snapshot.AssertUnchanged();
+        }
+
         private static void AssertRole(Renderer renderer, uint expectedRole)
         {
             Assert.That(renderer.renderingLayerMask & AttachVisualLayers.Owned, Is.EqualTo(expectedRole));
+        }
+
+        private sealed class VisualSnapshot
+        {
+            private readonly RigidbodySnapshot[] bodies;
+            private readonly RendererSnapshot[] renderers;
+            private readonly ColliderSnapshot[] colliders;
+
+            internal VisualSnapshot(
+                AttachableObject firstAttachable,
+                AttachableObject secondAttachable,
+                AttachAbilityController.AbilityState state)
+            {
+                State = state;
+                AttachableObject[] attachables = { firstAttachable, secondAttachable };
+                bodies = new RigidbodySnapshot[attachables.Length];
+                List<RendererSnapshot> rendererStates = new();
+                List<ColliderSnapshot> colliderStates = new();
+                for (int i = 0; i < attachables.Length; i++)
+                {
+                    bodies[i] = new RigidbodySnapshot(attachables[i].Body);
+                    Renderer[] childRenderers = attachables[i].GetComponentsInChildren<Renderer>(true);
+                    for (int rendererIndex = 0; rendererIndex < childRenderers.Length; rendererIndex++)
+                    {
+                        rendererStates.Add(new RendererSnapshot(childRenderers[rendererIndex]));
+                    }
+
+                    Collider[] childColliders = attachables[i].GetComponentsInChildren<Collider>(true);
+                    for (int colliderIndex = 0; colliderIndex < childColliders.Length; colliderIndex++)
+                    {
+                        colliderStates.Add(new ColliderSnapshot(childColliders[colliderIndex]));
+                    }
+                }
+
+                renderers = rendererStates.ToArray();
+                colliders = colliderStates.ToArray();
+            }
+
+            internal AttachAbilityController.AbilityState State { get; }
+
+            internal void AssertUnchanged()
+            {
+                for (int i = 0; i < bodies.Length; i++)
+                {
+                    bodies[i].AssertUnchanged();
+                }
+
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    renderers[i].AssertUnchanged();
+                }
+
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    colliders[i].AssertUnchanged();
+                }
+            }
+        }
+
+        private readonly struct RigidbodySnapshot
+        {
+            private readonly Rigidbody body;
+            private readonly float mass;
+            private readonly bool useGravity;
+            private readonly bool isKinematic;
+            private readonly Vector3 linearVelocity;
+            private readonly Vector3 angularVelocity;
+            private readonly RigidbodyConstraints constraints;
+            private readonly Vector3 inertiaTensor;
+            private readonly Quaternion inertiaTensorRotation;
+            private readonly float linearDamping;
+            private readonly float angularDamping;
+            private readonly RigidbodyInterpolation interpolation;
+            private readonly CollisionDetectionMode collisionDetectionMode;
+            private readonly bool detectCollisions;
+
+            internal RigidbodySnapshot(Rigidbody source)
+            {
+                body = source;
+                mass = source.mass;
+                useGravity = source.useGravity;
+                isKinematic = source.isKinematic;
+                linearVelocity = source.linearVelocity;
+                angularVelocity = source.angularVelocity;
+                constraints = source.constraints;
+                inertiaTensor = source.inertiaTensor;
+                inertiaTensorRotation = source.inertiaTensorRotation;
+                linearDamping = source.linearDamping;
+                angularDamping = source.angularDamping;
+                interpolation = source.interpolation;
+                collisionDetectionMode = source.collisionDetectionMode;
+                detectCollisions = source.detectCollisions;
+            }
+
+            internal void AssertUnchanged()
+            {
+                Assert.That(body.mass, Is.EqualTo(mass));
+                Assert.That(body.useGravity, Is.EqualTo(useGravity));
+                Assert.That(body.isKinematic, Is.EqualTo(isKinematic));
+                Assert.That(body.linearVelocity, Is.EqualTo(linearVelocity));
+                Assert.That(body.angularVelocity, Is.EqualTo(angularVelocity));
+                Assert.That(body.constraints, Is.EqualTo(constraints));
+                Assert.That(body.inertiaTensor, Is.EqualTo(inertiaTensor));
+                Assert.That(body.inertiaTensorRotation, Is.EqualTo(inertiaTensorRotation));
+                Assert.That(body.linearDamping, Is.EqualTo(linearDamping));
+                Assert.That(body.angularDamping, Is.EqualTo(angularDamping));
+                Assert.That(body.interpolation, Is.EqualTo(interpolation));
+                Assert.That(body.collisionDetectionMode, Is.EqualTo(collisionDetectionMode));
+                Assert.That(body.detectCollisions, Is.EqualTo(detectCollisions));
+            }
+        }
+
+        private readonly struct RendererSnapshot
+        {
+            private readonly Renderer renderer;
+            private readonly Vector3 position;
+            private readonly Quaternion rotation;
+            private readonly Vector3 scale;
+            private readonly uint unrelatedLayers;
+            private readonly Material[] materials;
+
+            internal RendererSnapshot(Renderer source)
+            {
+                renderer = source;
+                position = source.transform.position;
+                rotation = source.transform.rotation;
+                scale = source.transform.localScale;
+                unrelatedLayers = source.renderingLayerMask & ~AttachVisualLayers.Owned;
+                materials = source.sharedMaterials;
+            }
+
+            internal void AssertUnchanged()
+            {
+                Assert.That(renderer.transform.position, Is.EqualTo(position));
+                Assert.That(renderer.transform.rotation, Is.EqualTo(rotation));
+                Assert.That(renderer.transform.localScale, Is.EqualTo(scale));
+                Assert.That(renderer.renderingLayerMask & ~AttachVisualLayers.Owned, Is.EqualTo(unrelatedLayers));
+                Material[] current = renderer.sharedMaterials;
+                Assert.That(current.Length, Is.EqualTo(materials.Length));
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    Assert.That(current[i], Is.SameAs(materials[i]));
+                }
+            }
+        }
+
+        private readonly struct ColliderSnapshot
+        {
+            private readonly Collider collider;
+            private readonly PhysicsMaterial material;
+
+            internal ColliderSnapshot(Collider source)
+            {
+                collider = source;
+                material = source.sharedMaterial;
+            }
+
+            internal void AssertUnchanged()
+            {
+                Assert.That(collider.sharedMaterial, Is.SameAs(material));
+            }
         }
     }
 }
