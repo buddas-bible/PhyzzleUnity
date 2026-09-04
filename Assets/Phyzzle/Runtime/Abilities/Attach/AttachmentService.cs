@@ -31,6 +31,7 @@ namespace Phyzzle.Abilities.Attach
         private readonly Dictionary<EdgeKey, FixedJoint> joints = new();
 
         public AttachSettings Settings => settings;
+        internal int TopologyVersion { get; private set; }
 
         public void Configure(AttachSettings attachSettings)
         {
@@ -41,7 +42,12 @@ namespace Phyzzle.Abilities.Attach
         {
             if (attachable != null)
             {
+                int nodeCount = graph.NodeCount;
                 graph.Add(attachable);
+                if (graph.NodeCount != nodeCount)
+                {
+                    TopologyVersion++;
+                }
             }
         }
 
@@ -53,7 +59,10 @@ namespace Phyzzle.Abilities.Attach
             }
 
             Detach(attachable);
-            graph.Remove(attachable);
+            if (graph.Remove(attachable))
+            {
+                TopologyVersion++;
+            }
         }
 
         public bool AreInSameIsland(AttachableObject first, AttachableObject second)
@@ -165,7 +174,10 @@ namespace Phyzzle.Abilities.Attach
             joint.enableCollision = false;
             joint.enablePreprocessing = true;
 
-            graph.Connect(first, second);
+            if (graph.Connect(first, second))
+            {
+                TopologyVersion++;
+            }
             joints[new EdgeKey(first, second)] = joint;
             return true;
         }
@@ -208,6 +220,8 @@ namespace Phyzzle.Abilities.Attach
                     member?.RestoreSelectionOverride();
                 }
             }
+
+            TopologyVersion++;
 
             return true;
         }
