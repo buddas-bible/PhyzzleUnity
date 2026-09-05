@@ -9,6 +9,7 @@ using Phyzzle.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Tests
@@ -264,7 +265,10 @@ namespace Phyzzle.Tests
             Assert.That(player.GetComponents<AttachVisualController>(), Has.Length.EqualTo(1));
             Assert.That(player.GetComponents<AttachProjectionRenderer>(), Has.Length.EqualTo(1));
             AssertSerializedReferencesArePresent(new SerializedObject(visuals),
-                "ability", "targeting", "holdController", "attachmentService", "projectionRenderer", "settings");
+                "ability", "targeting", "holdController", "attachmentService", "projectionRenderer", "settings",
+                "supportedPipeline");
+            Assert.That(new SerializedObject(visuals).FindProperty("supportedPipeline").objectReferenceValue,
+                Is.SameAs(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset")));
             AssertSerializedReferencesArePresent(new SerializedObject(projection),
                 "camera", "settings", "projectionMaterial");
         }

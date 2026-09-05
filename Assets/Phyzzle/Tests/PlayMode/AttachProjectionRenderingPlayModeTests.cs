@@ -32,6 +32,9 @@ namespace Phyzzle.Tests
             platformMaterial.SetColor("_BaseColor", PlatformColor);
             projectionMaterial = new Material(projection);
             ConfigureProjectionMaterial();
+            Shader.SetGlobalFloat("_AttachVisualBlend", 1f);
+            Shader.SetGlobalFloat("_AttachWorldSaturation", 1f);
+            Shader.SetGlobalFloat("_AttachWorldBrightness", 1f);
 
             primaryTarget = CreateTarget();
             secondaryTarget = CreateTarget();
@@ -72,6 +75,9 @@ namespace Phyzzle.Tests
             ReleaseTarget(primaryTarget);
             ReleaseTarget(secondaryTarget);
             Shader.SetGlobalColor("_AttachHeldColor", Color.clear);
+            Shader.SetGlobalFloat("_AttachVisualBlend", 0f);
+            Shader.SetGlobalFloat("_AttachWorldSaturation", 0f);
+            Shader.SetGlobalFloat("_AttachWorldBrightness", 0f);
         }
 
         [Test]
@@ -143,6 +149,49 @@ namespace Phyzzle.Tests
                 Object.DestroyImmediate(deeperReceiver);
                 Object.DestroyImmediate(deeperMaterial);
             }
+        }
+
+        [Test]
+        public void Projection_GlobalVisualBlendScalesIntermediateFade()
+        {
+            Shader.SetGlobalFloat("_AttachVisualBlend", 1f);
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color fullBlend = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            Shader.SetGlobalFloat("_AttachVisualBlend", 0.5f);
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color halfBlend = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            float fullGreenContribution = fullBlend.g - PlatformColor.g;
+            float halfGreenContribution = halfBlend.g - PlatformColor.g;
+            Assert.That(fullGreenContribution, Is.GreaterThan(0.12f));
+            Assert.That(halfGreenContribution, Is.GreaterThan(fullGreenContribution * 0.3f));
+            Assert.That(halfGreenContribution, Is.LessThan(fullGreenContribution * 0.7f),
+                "A Holding exit at half blend must not render the projection at full opacity.");
+        }
+
+        [Test]
+        public void Projection_ZeroGlobalVisualBlendSuppressesTheNextDraw()
+        {
+            Shader.SetGlobalFloat("_AttachVisualBlend", 1f);
+            primaryCamera.Render();
+            Color baseline = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color visible = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+            Assert.That(visible.g, Is.GreaterThan(PlatformColor.g + 0.12f));
+
+            Shader.SetGlobalFloat("_AttachVisualBlend", 0f);
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color cleaned = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+            Assert.That(cleaned.r, Is.EqualTo(baseline.r).Within(0.02f));
+            Assert.That(cleaned.g, Is.EqualTo(baseline.g).Within(0.02f),
+                "Hard cleanup must not leak a visible projection into the next draw.");
+            Assert.That(cleaned.b, Is.EqualTo(baseline.b).Within(0.02f));
         }
 
         private void SubmitToPrimaryCamera()

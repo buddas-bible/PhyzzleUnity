@@ -242,7 +242,8 @@ namespace Phyzzle.Editor
                 holdController,
                 attachmentService,
                 projection,
-                attachSettings);
+                attachSettings,
+                AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PcPipelinePath));
             EditorUtility.SetDirty(projection);
             EditorUtility.SetDirty(visuals);
             return visuals;

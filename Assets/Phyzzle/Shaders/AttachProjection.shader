@@ -25,6 +25,7 @@ Shader "Phyzzle/AttachProjection"
             float _AttachProjectionOpacity;
             float _AttachProjectionBias;
             float _AttachProjectionDepthTolerance;
+            float _AttachVisualBlend;
             float4 _AttachHeldColor;
 
             struct Attributes
@@ -67,7 +68,8 @@ Shader "Phyzzle/AttachProjection"
                 float sceneDepth = ToEyeDepth(SampleSceneDepth(uv));
                 float fragmentDepth = ToEyeDepth(input.positionCS.z);
                 clip(_AttachProjectionDepthTolerance - abs(sceneDepth - fragmentDepth));
-                return float4(_AttachHeldColor.rgb, _AttachHeldColor.a * _AttachProjectionOpacity);
+                return float4(_AttachHeldColor.rgb,
+                    _AttachHeldColor.a * _AttachProjectionOpacity * saturate(_AttachVisualBlend));
             }
             ENDHLSL
         }

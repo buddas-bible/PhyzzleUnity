@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Phyzzle.Abilities.Attach
 {
@@ -12,6 +13,7 @@ namespace Phyzzle.Abilities.Attach
         [SerializeField] private AttachmentService attachmentService;
         [SerializeField] private AttachProjectionRenderer projectionRenderer;
         [SerializeField] private AttachSettings settings;
+        [SerializeField] private RenderPipelineAsset supportedPipeline;
 
         private readonly Dictionary<AttachableObject, uint> desiredObjectRoles = new();
         private readonly Dictionary<AttachableObject, uint> appliedObjectRoles = new();
@@ -35,7 +37,8 @@ namespace Phyzzle.Abilities.Attach
             AttachHoldController attachHoldController,
             AttachmentService attachAttachmentService,
             AttachProjectionRenderer attachProjectionRenderer,
-            AttachSettings attachSettings)
+            AttachSettings attachSettings,
+            RenderPipelineAsset attachSupportedPipeline)
         {
             HardCleanup();
             ability = attachAbility;
@@ -44,6 +47,7 @@ namespace Phyzzle.Abilities.Attach
             attachmentService = attachAttachmentService;
             projectionRenderer = attachProjectionRenderer;
             settings = attachSettings;
+            supportedPipeline = attachSupportedPipeline;
         }
 
         private void LateUpdate()
@@ -65,7 +69,8 @@ namespace Phyzzle.Abilities.Attach
         {
             if (ability == null || targeting == null || holdController == null || attachmentService == null ||
                 projectionRenderer == null || settings == null || !ability.isActiveAndEnabled ||
-                !targeting.isActiveAndEnabled || !holdController.isActiveAndEnabled)
+                !targeting.isActiveAndEnabled || !holdController.isActiveAndEnabled ||
+                !SupportsPipeline(supportedPipeline, GraphicsSettings.currentRenderPipeline))
             {
                 HardCleanup();
                 return;
@@ -234,6 +239,13 @@ namespace Phyzzle.Abilities.Attach
 
         private void FadeOut(float unscaledDeltaTime)
         {
+            if (!ReferenceEquals(observedHeldRoot, null) &&
+                (observedHeldRoot == null || !observedHeldRoot.isActiveAndEnabled))
+            {
+                HardCleanup();
+                return;
+            }
+
             if (visualBlend <= 0f)
             {
                 HardCleanup();
@@ -334,6 +346,11 @@ namespace Phyzzle.Abilities.Attach
                 ? target
                 : Mathf.MoveTowards(current, target, Mathf.Max(0f, deltaTime) / duration);
         }
+
+        internal static bool SupportsPipeline(
+            RenderPipelineAsset configured,
+            RenderPipelineAsset current) =>
+            configured != null && ReferenceEquals(configured, current);
 
         private static int RolePriority(uint role)
         {

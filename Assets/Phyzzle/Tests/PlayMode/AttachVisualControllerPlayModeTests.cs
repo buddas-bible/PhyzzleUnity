@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using Phyzzle.Abilities.Attach;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
@@ -26,6 +27,9 @@ namespace Phyzzle.Tests
         private AttachableObject second;
         private readonly List<GameObject> extraObjects = new();
         private Material projectionMaterial;
+        private RenderPipelineAsset originalGraphicsPipeline;
+        private RenderPipelineAsset originalQualityPipeline;
+        private bool pipelineOverridden;
 
         [SetUp]
         public void SetUp()
@@ -55,7 +59,14 @@ namespace Phyzzle.Tests
             projectionObject = new GameObject("Attach Projection");
             projection = projectionObject.AddComponent<AttachProjectionRenderer>();
             controller = playerObject.AddComponent<AttachVisualController>();
-            controller.Configure(ability, targeting, hold, service, projection, settings);
+            controller.Configure(
+                ability,
+                targeting,
+                hold,
+                service,
+                projection,
+                settings,
+                GraphicsSettings.currentRenderPipeline);
 
             first = CreateAttachableCube("First", Vector3.zero, out firstObject);
             second = CreateAttachableCube("Second", Vector3.right * 2f, out secondObject);
@@ -65,6 +76,17 @@ namespace Phyzzle.Tests
         [UnityTearDown]
         public IEnumerator TearDown()
         {
+            if (pipelineOverridden)
+            {
+                GraphicsSettings.defaultRenderPipeline = null;
+                QualitySettings.renderPipeline = null;
+                yield return null;
+                GraphicsSettings.defaultRenderPipeline = originalGraphicsPipeline;
+                QualitySettings.renderPipeline = originalQualityPipeline;
+                pipelineOverridden = false;
+                yield return null;
+            }
+
             Object.Destroy(playerObject);
             Object.Destroy(firstObject);
             Object.Destroy(secondObject);
@@ -216,6 +238,58 @@ namespace Phyzzle.Tests
         }
 
         [UnityTest]
+        public IEnumerator MobilePipeline_HardCleansSelectingAndHoldingThenPcPipelineRecovers()
+        {
+            originalGraphicsPipeline = GraphicsSettings.defaultRenderPipeline;
+            originalQualityPipeline = QualitySettings.renderPipeline;
+            RenderPipelineAsset supportedPipeline = LoadPipelineAsset("Assets/Settings/PC_RPAsset.asset");
+            RenderPipelineAsset mobilePipeline = LoadPipelineAsset("Assets/Settings/Mobile_RPAsset.asset");
+            Assert.That(supportedPipeline, Is.Not.Null);
+            Assert.That(mobilePipeline, Is.Not.SameAs(supportedPipeline));
+            pipelineOverridden = true;
+
+            GraphicsSettings.defaultRenderPipeline = supportedPipeline;
+            QualitySettings.renderPipeline = supportedPipeline;
+            yield return null;
+            controller.Configure(ability, targeting, hold, service, projection, settings, supportedPipeline);
+
+            EnterSelecting(first, first, second);
+            controller.TickVisual(1f);
+            AssertRole(firstObject.GetComponent<Renderer>(), AttachVisualLayers.Focused);
+
+            GraphicsSettings.defaultRenderPipeline = mobilePipeline;
+            QualitySettings.renderPipeline = mobilePipeline;
+            yield return null;
+            Assert.That(QualitySettings.renderPipeline, Is.Not.SameAs(supportedPipeline));
+            Assert.That(GraphicsSettings.currentRenderPipeline, Is.SameAs(QualitySettings.renderPipeline));
+            controller.TickVisual(1f);
+            AssertVisualsHardClean();
+
+            GraphicsSettings.defaultRenderPipeline = supportedPipeline;
+            QualitySettings.renderPipeline = supportedPipeline;
+            yield return null;
+            controller.TickVisual(1f);
+            AssertRole(firstObject.GetComponent<Renderer>(), AttachVisualLayers.Focused);
+
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            AssertRole(firstObject.GetComponent<Renderer>(), AttachVisualLayers.Held);
+            Assert.That(GetProjectionMeshFilters(), Is.Not.Empty);
+
+            GraphicsSettings.defaultRenderPipeline = mobilePipeline;
+            QualitySettings.renderPipeline = mobilePipeline;
+            yield return null;
+            controller.TickVisual(1f);
+            AssertVisualsHardClean();
+
+            GraphicsSettings.defaultRenderPipeline = supportedPipeline;
+            QualitySettings.renderPipeline = supportedPipeline;
+            yield return null;
+            controller.TickVisual(1f);
+            AssertRole(firstObject.GetComponent<Renderer>(), AttachVisualLayers.Held);
+        }
+
+        [UnityTest]
         public IEnumerator DestroyedHeldRoot_HardCleansVisuals()
         {
             EnterSelecting(first, first);
@@ -229,6 +303,44 @@ namespace Phyzzle.Tests
             Assert.That(controller.VisualBlend, Is.Zero);
             Assert.That(Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Is.Zero);
             Assert.That(GetProjectionMeshFilters().Count, Is.Zero);
+        }
+
+        [Test]
+        public void DestroyedHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately()
+        {
+            Assert.That(service.Attach(first, second, Vector3.right), Is.True);
+            EnterSelecting(first, first, second);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            ability.ReturnToDefault();
+            Object.DestroyImmediate(firstObject);
+
+            controller.TickVisual(0f);
+
+            AssertRole(secondObject.GetComponent<Renderer>(), 0u);
+            Assert.That(controller.VisualBlend, Is.Zero);
+            Assert.That(Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Is.Zero);
+            Assert.That(GetProjectionMeshFilters(), Is.Empty);
+            Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
+        }
+
+        [Test]
+        public void InactiveHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately()
+        {
+            Assert.That(service.Attach(first, second, Vector3.right), Is.True);
+            EnterSelecting(first, first, second);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            ability.ReturnToDefault();
+            firstObject.SetActive(false);
+
+            controller.TickVisual(0f);
+
+            AssertRole(secondObject.GetComponent<Renderer>(), 0u);
+            Assert.That(controller.VisualBlend, Is.Zero);
+            Assert.That(Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Is.Zero);
+            Assert.That(GetProjectionMeshFilters(), Is.Empty);
+            Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
         }
 
         [Test]
@@ -411,6 +523,25 @@ namespace Phyzzle.Tests
         private static void AssertRole(Renderer renderer, uint expectedRole)
         {
             Assert.That(renderer.renderingLayerMask & AttachVisualLayers.Owned, Is.EqualTo(expectedRole));
+        }
+
+        private void AssertVisualsHardClean()
+        {
+            AssertRole(firstObject.GetComponent<Renderer>(), 0u);
+            AssertRole(secondObject.GetComponent<Renderer>(), 0u);
+            Assert.That(controller.VisualBlend, Is.Zero);
+            Assert.That(Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Is.Zero);
+            Assert.That(GetProjectionMeshFilters(), Is.Empty);
+            Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
+        }
+
+        private static RenderPipelineAsset LoadPipelineAsset(string path)
+        {
+            System.Type assetDatabase = System.Type.GetType("UnityEditor.AssetDatabase, UnityEditor");
+            MethodInfo loadMainAsset = assetDatabase?.GetMethod("LoadMainAssetAtPath",
+                BindingFlags.Public | BindingFlags.Static);
+            Assert.That(loadMainAsset, Is.Not.Null);
+            return loadMainAsset.Invoke(null, new object[] { path }) as RenderPipelineAsset;
         }
 
         private sealed class VisualSnapshot
