@@ -198,6 +198,29 @@ namespace Phyzzle.Tests
         }
 
         [Test]
+        public void LeavingSelection_KeepsGhostsAtRecordedWorldPosesWhenPlayerMoves()
+        {
+            EnterSelection();
+            visuals.TickVisual(0.14f);
+            List<Transform> ghosts = ActiveGhostRoots();
+            Vector3[] positions = ghosts.Select(ghost => ghost.position).ToArray();
+            Quaternion[] rotations = ghosts.Select(ghost => ghost.rotation).ToArray();
+
+            ability.ReturnToDefault();
+            playerObject.transform.SetPositionAndRotation(
+                new Vector3(3f, 2f, -4f),
+                Quaternion.Euler(15f, 80f, -10f));
+            visuals.TickVisual(0.08f);
+
+            Assert.That(ghosts.Select(ghost => ghost.position), Is.EqualTo(positions));
+            for (int i = 0; i < ghosts.Count; i++)
+            {
+                Assert.That(Quaternion.Angle(ghosts[i].rotation, rotations[i]),
+                    Is.LessThan(0.001f));
+            }
+        }
+
+        [Test]
         public void Retargeting_MovesActiveRoleInTheSameVisualTick()
         {
             EnterSelection();

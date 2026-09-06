@@ -102,6 +102,23 @@ namespace Phyzzle.Abilities.Rewind
             HardCleanup();
         }
 
+        private void OnDestroy()
+        {
+            if (previewRoot == null)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                Destroy(previewRoot.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(previewRoot.gameObject);
+            }
+        }
+
         internal void TickVisual(float unscaledDeltaTime)
         {
             if (ability == null || targeting == null || playerRoot == null || settings == null)
@@ -444,7 +461,6 @@ namespace Phyzzle.Abilities.Rewind
             }
 
             GameObject root = new("RecallVisualPreview");
-            root.transform.SetParent(transform, false);
             root.hideFlags = HideFlags.DontSave;
             previewRoot = root.transform;
 
