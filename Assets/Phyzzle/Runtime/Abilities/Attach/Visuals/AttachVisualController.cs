@@ -12,6 +12,8 @@ namespace Phyzzle.Abilities.Attach
         [SerializeField] private AttachHoldController holdController;
         [SerializeField] private AttachmentService attachmentService;
         [SerializeField] private AttachProjectionRenderer projectionRenderer;
+        [SerializeField] private AttachTetherRenderer tetherRenderer;
+        [SerializeField] private AttachContactPreviewRenderer contactPreviewRenderer;
         [SerializeField] private AttachSettings settings;
         [SerializeField] private RenderPipelineAsset supportedPipeline;
 
@@ -38,7 +40,9 @@ namespace Phyzzle.Abilities.Attach
             AttachmentService attachAttachmentService,
             AttachProjectionRenderer attachProjectionRenderer,
             AttachSettings attachSettings,
-            RenderPipelineAsset attachSupportedPipeline)
+            RenderPipelineAsset attachSupportedPipeline,
+            AttachTetherRenderer attachTetherRenderer = null,
+            AttachContactPreviewRenderer attachContactPreviewRenderer = null)
         {
             HardCleanup();
             ability = attachAbility;
@@ -46,6 +50,8 @@ namespace Phyzzle.Abilities.Attach
             holdController = attachHoldController;
             attachmentService = attachAttachmentService;
             projectionRenderer = attachProjectionRenderer;
+            tetherRenderer = attachTetherRenderer;
+            contactPreviewRenderer = attachContactPreviewRenderer;
             settings = attachSettings;
             supportedPipeline = attachSupportedPipeline;
         }
@@ -81,6 +87,8 @@ namespace Phyzzle.Abilities.Attach
                 BuildSelectingRoles();
                 UpdateRoles();
                 ClearProjection();
+                tetherRenderer?.Clear();
+                contactPreviewRenderer?.Clear();
                 visualBlend = MoveBlend(visualBlend, 1f, settings.visualEnterDuration, unscaledDeltaTime);
                 PushGlobals();
                 return;
@@ -89,7 +97,7 @@ namespace Phyzzle.Abilities.Attach
             if (ability.State == AttachAbilityController.AbilityState.Holding)
             {
                 AttachableObject heldRoot = holdController.HeldObject;
-                if (heldRoot == null)
+                if (heldRoot == null || !heldRoot.isActiveAndEnabled)
                 {
                     HardCleanup();
                     return;
@@ -105,11 +113,31 @@ namespace Phyzzle.Abilities.Attach
                 }
                 visualBlend = MoveBlend(visualBlend, 1f, settings.visualEnterDuration, unscaledDeltaTime);
                 PushGlobals();
-                projectionRenderer.Submit();
+                projectionRenderer.Submit(unscaledDeltaTime);
+                tetherRenderer?.Submit(heldRoot, visualBlend);
+                UpdateContactPreview();
                 return;
             }
 
             FadeOut(unscaledDeltaTime);
+        }
+
+        private void UpdateContactPreview()
+        {
+            if (contactPreviewRenderer == null)
+            {
+                return;
+            }
+
+            if (attachmentService.TryGetPreviewContact(islandMembers,
+                out AttachableObject member, out AttachableObject other, out Vector3 anchor))
+            {
+                contactPreviewRenderer.Submit(member, other, anchor, visualBlend);
+            }
+            else
+            {
+                contactPreviewRenderer.Clear();
+            }
         }
 
         private void BuildSelectingRoles()
@@ -239,6 +267,8 @@ namespace Phyzzle.Abilities.Attach
 
         private void FadeOut(float unscaledDeltaTime)
         {
+            // A preview promises an available action; unlike the holding glow, it must not linger.
+            contactPreviewRenderer?.Clear();
             if (!ReferenceEquals(observedHeldRoot, null) &&
                 (observedHeldRoot == null || !observedHeldRoot.isActiveAndEnabled))
             {
@@ -258,8 +288,10 @@ namespace Phyzzle.Abilities.Attach
             {
                 if (projectionIsland.Count > 0)
                 {
-                    projectionRenderer.Submit();
+                    projectionRenderer.Submit(unscaledDeltaTime);
                 }
+
+                tetherRenderer?.Submit(observedHeldRoot, visualBlend);
 
                 return;
             }
@@ -289,6 +321,8 @@ namespace Phyzzle.Abilities.Attach
             islandMembers.Clear();
             projectionIsland.Clear();
             projectionRenderer?.Clear();
+            tetherRenderer?.Clear();
+            contactPreviewRenderer?.Clear();
             visualBlend = 0f;
             islandRefreshCount = 0;
             observedHeldRoot = null;
@@ -313,10 +347,8 @@ namespace Phyzzle.Abilities.Attach
         private void PushGlobals()
         {
             Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, visualBlend);
-            Shader.SetGlobalFloat(AttachVisualShaderIds.WorldSaturation, Mathf.Clamp01(settings.visualWorldSaturation));
-            Shader.SetGlobalFloat(AttachVisualShaderIds.WorldBrightness, Mathf.Max(0f, settings.visualWorldBrightness));
-            Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, settings.eligibleVisualColor);
-            Shader.SetGlobalColor(AttachVisualShaderIds.FocusedColor, settings.focusedVisualColor);
+            Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, settings.eligibleVisualColor.linear);
+            Shader.SetGlobalColor(AttachVisualShaderIds.FocusedColor, settings.focusedVisualColor.linear);
             Shader.SetGlobalColor(AttachVisualShaderIds.HeldColor, settings.heldVisualColor);
             Shader.SetGlobalFloat(AttachVisualShaderIds.EligibleOutlinePixels, Mathf.Max(0f, settings.eligibleOutlinePixels));
             Shader.SetGlobalFloat(AttachVisualShaderIds.FocusedOutlinePixels, Mathf.Max(0f, settings.focusedOutlinePixels));
@@ -328,8 +360,6 @@ namespace Phyzzle.Abilities.Attach
         private static void ResetGlobals()
         {
             Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, 0f);
-            Shader.SetGlobalFloat(AttachVisualShaderIds.WorldSaturation, 0f);
-            Shader.SetGlobalFloat(AttachVisualShaderIds.WorldBrightness, 0f);
             Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, Color.clear);
             Shader.SetGlobalColor(AttachVisualShaderIds.FocusedColor, Color.clear);
             Shader.SetGlobalColor(AttachVisualShaderIds.HeldColor, Color.clear);

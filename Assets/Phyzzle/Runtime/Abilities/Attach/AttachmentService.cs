@@ -156,6 +156,79 @@ namespace Phyzzle.Abilities.Attach
             return false;
         }
 
+        internal void CopyConnectionJoints(List<FixedJoint> destination)
+        {
+            destination.Clear();
+            foreach (FixedJoint joint in joints.Values)
+            {
+                if (joint != null && joint.connectedBody != null)
+                {
+                    destination.Add(joint);
+                }
+            }
+        }
+
+        internal bool TryGetPreviewContact(
+            IReadOnlyList<AttachableObject> heldIsland,
+            out AttachableObject member,
+            out AttachableObject other,
+            out Vector3 worldAnchor)
+        {
+            member = null;
+            other = null;
+            worldAnchor = default;
+
+            if (heldIsland == null)
+            {
+                return false;
+            }
+
+            // The caller keeps this BFS island current with TopologyVersion, matching TryAttach order.
+            for (int i = 0; i < heldIsland.Count; i++)
+            {
+                AttachableObject candidateMember = heldIsland[i];
+                if (candidateMember == null || candidateMember.Body == null)
+                {
+                    continue;
+                }
+
+                AttachableObject candidateOther = candidateMember.ContactCandidate;
+                if (candidateOther == null || candidateOther == candidateMember || candidateOther.Body == null)
+                {
+                    continue;
+                }
+
+                // ponytail: scan small cached islands; use a reused membership set if large islands need it.
+                bool isInHeldIsland = false;
+                for (int j = 0; j < heldIsland.Count; j++)
+                {
+                    if (heldIsland[j] == candidateOther)
+                    {
+                        isInHeldIsland = true;
+                        break;
+                    }
+                }
+
+                if (isInHeldIsland)
+                {
+                    continue;
+                }
+
+                // Suppress an inactive first candidate instead of previewing a different TryAttach result.
+                if (!candidateMember.isActiveAndEnabled || !candidateOther.isActiveAndEnabled)
+                {
+                    return false;
+                }
+
+                member = candidateMember;
+                other = candidateOther;
+                worldAnchor = candidateMember.ContactAnchor;
+                return true;
+            }
+
+            return false;
+        }
+
         public bool Attach(AttachableObject first, AttachableObject second, Vector3 worldAnchor)
         {
             if (first == null || second == null || first == second ||

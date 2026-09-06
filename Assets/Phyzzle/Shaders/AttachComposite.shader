@@ -22,8 +22,6 @@ Shader "Hidden/Phyzzle/AttachComposite"
             TEXTURE2D(_AttachMaskTexture);
 
             float _AttachVisualBlend;
-            float _AttachWorldSaturation;
-            float _AttachWorldBrightness;
             float4 _AttachEligibleColor;
             float4 _AttachFocusedColor;
             float4 _AttachHeldColor;
@@ -61,15 +59,12 @@ Shader "Hidden/Phyzzle/AttachComposite"
                 float focusedOutline = OutlineAt(uv, max(0.0, _AttachFocusedOutlinePixels), 1) * (1.0 - mask.g);
                 float heldOutline = OutlineAt(uv, max(0.0, _AttachHeldOutlinePixels), 2) * (1.0 - mask.b);
 
-                float luminance = dot(source.rgb, float3(0.2126, 0.7152, 0.0722));
-                float3 world = lerp(luminance.xxx, source.rgb, saturate(_AttachWorldSaturation));
-                world *= max(0.0, _AttachWorldBrightness);
                 float eligibleWeight = saturate(mask.r * 0.62 + eligibleOutline * 0.45);
                 float focusedWeight = saturate(mask.g * 0.82 + focusedOutline * 0.72);
                 float pulse = 1.0 + sin((uv.x + uv.y) * 36.0 + _Time.y *
                     _AttachHeldPulseSpeed * 6.2831853) * _AttachHeldPulseStrength;
                 float heldWeight = saturate(mask.b * 0.82 + heldOutline * 0.72);
-                float3 treated = lerp(world, _AttachEligibleColor.rgb, eligibleWeight);
+                float3 treated = lerp(source.rgb, _AttachEligibleColor.rgb, eligibleWeight);
                 treated = lerp(treated, _AttachFocusedColor.rgb, focusedWeight);
                 treated = lerp(treated, _AttachHeldColor.rgb * pulse, heldWeight);
                 return float4(lerp(source.rgb, treated, saturate(_AttachVisualBlend)), source.a);

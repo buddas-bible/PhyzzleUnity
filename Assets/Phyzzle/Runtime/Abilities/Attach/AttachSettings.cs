@@ -45,10 +45,8 @@ namespace Phyzzle.Abilities.Attach
         [Header("Visuals")]
         [Min(0f)] public float visualEnterDuration = 0.14f;
         [Min(0f)] public float visualExitDuration = 0.16f;
-        [Range(0f, 1f)] public float visualWorldSaturation = 0.35f;
-        [Min(0f)] public float visualWorldBrightness = 0.72f;
-        public Color eligibleVisualColor = new Color32(0xD9, 0x90, 0x24, 0xFF);
-        public Color focusedVisualColor = new Color32(0xFF, 0xC4, 0x4D, 0xFF);
+        public Color eligibleVisualColor = new Color32(0xE8, 0x65, 0x16, 0xFF);
+        public Color focusedVisualColor = new Color32(0xFF, 0x85, 0x2B, 0xFF);
         public Color heldVisualColor = new Color32(0x43, 0xF0, 0x8A, 0xFF);
         [Min(0f)] public float eligibleOutlinePixels = 1f;
         [Min(0f)] public float focusedOutlinePixels = 2.5f;

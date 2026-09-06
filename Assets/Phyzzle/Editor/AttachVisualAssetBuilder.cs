@@ -10,16 +10,20 @@ namespace Phyzzle.Editor
 {
     public readonly struct AttachVisualAssets
     {
-        internal AttachVisualAssets(Material mask, Material composite, Material projection)
+        internal AttachVisualAssets(Material mask, Material composite, Material projection, Material tether, Material contactPreview)
         {
             Mask = mask;
             Composite = composite;
             Projection = projection;
+            Tether = tether;
+            ContactPreview = contactPreview;
         }
 
         public Material Mask { get; }
         public Material Composite { get; }
         public Material Projection { get; }
+        public Material Tether { get; }
+        public Material ContactPreview { get; }
     }
 
     public static class AttachVisualAssetBuilder
@@ -40,7 +44,13 @@ namespace Phyzzle.Editor
             Material projection = EnsureMaterial(
                 materialsFolder + "/AttachProjection.mat",
                 "Phyzzle/AttachProjection");
-            return new AttachVisualAssets(mask, composite, projection);
+            Material tether = EnsureMaterial(
+                materialsFolder + "/AttachTether.mat",
+                "Phyzzle/AttachTether");
+            Material contactPreview = EnsureMaterial(
+                materialsFolder + "/AttachContactPreview.mat",
+                "Phyzzle/AttachContactPreview");
+            return new AttachVisualAssets(mask, composite, projection, tether, contactPreview);
         }
 
         public static AttachRenderFeature EnsurePcRendererFeature(AttachVisualAssets assets)

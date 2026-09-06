@@ -67,9 +67,13 @@ Shader "Phyzzle/AttachProjection"
                 float2 uv = GetNormalizedScreenSpaceUV(input.positionCS);
                 float sceneDepth = ToEyeDepth(SampleSceneDepth(uv));
                 float fragmentDepth = ToEyeDepth(input.positionCS.z);
-                clip(_AttachProjectionDepthTolerance - abs(sceneDepth - fragmentDepth));
+                float depthDifference = abs(sceneDepth - fragmentDepth);
+                float tolerance = max(_AttachProjectionDepthTolerance, 0.0001);
+                // Fade near receiver intersections; empty space still contributes no color.
+                float receiverFade = 1.0 - smoothstep(tolerance * 0.5, tolerance, depthDifference);
+                clip(receiverFade - 0.0001);
                 return float4(_AttachHeldColor.rgb,
-                    _AttachHeldColor.a * _AttachProjectionOpacity * saturate(_AttachVisualBlend));
+                    _AttachHeldColor.a * _AttachProjectionOpacity * saturate(_AttachVisualBlend) * receiverFade);
             }
             ENDHLSL
         }

@@ -23,6 +23,10 @@ namespace Phyzzle.Tests
         private AttachAbilityController ability;
         private AttachProjectionRenderer projection;
         private AttachVisualController controller;
+        private AttachTetherRenderer tether;
+        private Material tetherMaterial;
+        private AttachContactPreviewRenderer contactPreview;
+        private Material contactPreviewMaterial;
         private AttachableObject first;
         private AttachableObject second;
         private readonly List<GameObject> extraObjects = new();
@@ -58,6 +62,12 @@ namespace Phyzzle.Tests
             ability.Configure(null, null, targeting, hold, settings);
             projectionObject = new GameObject("Attach Projection");
             projection = projectionObject.AddComponent<AttachProjectionRenderer>();
+            tether = playerObject.AddComponent<AttachTetherRenderer>();
+            tetherMaterial = new Material(Shader.Find("Phyzzle/AttachTether"));
+            tether.Configure(coreObject.AddComponent<Camera>(), modelObject.transform, tetherMaterial, settings);
+            contactPreview = playerObject.AddComponent<AttachContactPreviewRenderer>();
+            contactPreviewMaterial = new Material(Shader.Find("Phyzzle/AttachContactPreview") ?? Shader.Find("Phyzzle/AttachTether"));
+            contactPreview.Configure(coreObject.GetComponent<Camera>(), contactPreviewMaterial, settings);
             controller = playerObject.AddComponent<AttachVisualController>();
             controller.Configure(
                 ability,
@@ -66,7 +76,9 @@ namespace Phyzzle.Tests
                 service,
                 projection,
                 settings,
-                GraphicsSettings.currentRenderPipeline);
+                GraphicsSettings.currentRenderPipeline,
+                tether,
+                contactPreview);
 
             first = CreateAttachableCube("First", Vector3.zero, out firstObject);
             second = CreateAttachableCube("Second", Vector3.right * 2f, out secondObject);
@@ -93,6 +105,8 @@ namespace Phyzzle.Tests
             Object.Destroy(projectionObject);
             Object.Destroy(serviceObject);
             Object.Destroy(settings);
+            Object.Destroy(tetherMaterial);
+            Object.Destroy(contactPreviewMaterial);
             for (int i = 0; i < extraObjects.Count; i++)
             {
                 Object.Destroy(extraObjects[i]);
@@ -103,6 +117,94 @@ namespace Phyzzle.Tests
                 Object.Destroy(projectionMaterial);
             }
             yield return null;
+        }
+
+        [Test]
+        public void ContactPreview_TracksContactAndClearsImmediatelyOnAttachReleaseOrDisable()
+        {
+            FieldInfo contactField = typeof(AttachableObject).GetField("contactCandidate",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            contactField.SetValue(first, second);
+
+            EnterSelecting(first, first, second);
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.EqualTo(1));
+
+            first.ClearContact();
+            controller.TickVisual(0f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero);
+            contactField.SetValue(first, second);
+            controller.TickVisual(0f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.EqualTo(1));
+
+            Assert.That(service.TryAttach(first), Is.True);
+            controller.TickVisual(0f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero, "Committed contacts are no longer a preview.");
+            Assert.That(service.Detach(first), Is.True);
+            contactField.SetValue(first, second);
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.EqualTo(1));
+
+            ability.ReturnToDefault();
+            controller.TickVisual(0.01f);
+            Assert.That(controller.VisualBlend, Is.GreaterThan(0f));
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero, "Do not promise an attach during exit fade.");
+
+            EnterSelecting(first, first, second);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.EqualTo(1));
+            controller.enabled = false;
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero);
+            controller.enabled = true;
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.EqualTo(1));
+            controller.Configure(ability, targeting, hold, service, projection, settings, null, tether, contactPreview);
+            controller.TickVisual(1f);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero, "Unsupported pipelines must not draw the preview.");
+        }
+
+        [Test]
+        public void HoldingTether_FadesOnReleaseAndClearsOnRetargetOrDisable()
+        {
+            first.Body.position = Vector3.forward * 3f;
+            first.transform.position = first.Body.position;
+            Physics.SyncTransforms();
+            EnterSelecting(first, first, second);
+            controller.TickVisual(1f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
+            Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero);
+
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.EqualTo(1));
+
+            ability.ReturnToDefault();
+            controller.TickVisual(0.08f);
+            Assert.That(controller.VisualBlend, Is.InRange(0.1f, 0.9f));
+            Assert.That(tether.LastSubmittedDrawCount, Is.EqualTo(1));
+            controller.TickVisual(0.2f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
+            Assert.That(tether.RibbonMesh.vertexCount, Is.Zero);
+
+            EnterSelecting(first, first, second);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.EqualTo(1));
+            ability.ReturnToDefault();
+            ability.EnterSelecting();
+            controller.TickVisual(0.01f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
+
+            EnterSelecting(first, first, second);
+            Assert.That(ability.TryBeginHolding(), Is.True);
+            controller.TickVisual(1f);
+            Assert.That(tether.LastSubmittedDrawCount, Is.EqualTo(1));
+            controller.enabled = false;
+            Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
         }
 
         [Test]
@@ -251,7 +353,7 @@ namespace Phyzzle.Tests
             GraphicsSettings.defaultRenderPipeline = supportedPipeline;
             QualitySettings.renderPipeline = supportedPipeline;
             yield return null;
-            controller.Configure(ability, targeting, hold, service, projection, settings, supportedPipeline);
+            controller.Configure(ability, targeting, hold, service, projection, settings, supportedPipeline, tether);
 
             EnterSelecting(first, first, second);
             controller.TickVisual(1f);
@@ -533,6 +635,7 @@ namespace Phyzzle.Tests
             Assert.That(Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Is.Zero);
             Assert.That(GetProjectionMeshFilters(), Is.Empty);
             Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
+            Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
         }
 
         private static RenderPipelineAsset LoadPipelineAsset(string path)

@@ -63,7 +63,9 @@ namespace Phyzzle.Editor
                 attachmentService,
                 rewindCoordinator,
                 rewindVisualAssets.Preview,
-                attachVisualAssets.Projection);
+                attachVisualAssets.Projection,
+                attachVisualAssets.Tether,
+                attachVisualAssets.ContactPreview);
             CreateAttachable(
                 "Attachable_A",
                 new Vector3(0f, 5f, 6f),
@@ -118,7 +120,9 @@ namespace Phyzzle.Editor
             AttachmentService attachmentService,
             RewindCoordinator rewindCoordinator,
             Material rewindPreviewMaterial,
-            Material attachProjectionMaterial)
+            Material attachProjectionMaterial,
+            Material attachTetherMaterial,
+            Material attachContactPreviewMaterial)
         {
             GameObject root = new("PhyzzlePlayer");
             root.transform.position = new Vector3(0f, 0.1f, 0f);
@@ -175,7 +179,9 @@ namespace Phyzzle.Editor
                 holdController,
                 attachmentService,
                 attachSettings,
-                attachProjectionMaterial);
+                attachProjectionMaterial,
+                attachTetherMaterial,
+                attachContactPreviewMaterial);
             rewindTargeting.Configure(
                 cameraArmObject.transform,
                 cameraCoreObject.transform,
@@ -227,7 +233,9 @@ namespace Phyzzle.Editor
             AttachHoldController holdController,
             AttachmentService attachmentService,
             AttachSettings attachSettings,
-            Material projectionMaterial)
+            Material projectionMaterial,
+            Material tetherMaterial,
+            Material contactPreviewMaterial)
         {
             AttachProjectionRenderer projection =
                 player.GetComponent<AttachProjectionRenderer>() ??
@@ -235,7 +243,29 @@ namespace Phyzzle.Editor
             AttachVisualController visuals =
                 player.GetComponent<AttachVisualController>() ??
                 player.AddComponent<AttachVisualController>();
+            AttachTetherRenderer tether =
+                player.GetComponent<AttachTetherRenderer>() ??
+                player.AddComponent<AttachTetherRenderer>();
+            AttachContactPreviewRenderer contactPreview =
+                player.GetComponent<AttachContactPreviewRenderer>() ??
+                player.AddComponent<AttachContactPreviewRenderer>();
+            AttachGlueRenderer glue =
+                player.GetComponent<AttachGlueRenderer>() ??
+                player.AddComponent<AttachGlueRenderer>();
+            Transform model = player.transform.Find("Model") ?? player.transform;
+            Transform handOrigin = model.Find("AttachHandOrigin");
+            if (handOrigin == null)
+            {
+                handOrigin = new GameObject("AttachHandOrigin").transform;
+                handOrigin.SetParent(model, false);
+                // The sandbox has a capsule model; replace this anchor with a hand bone for a rigged character.
+                handOrigin.localPosition = new Vector3(0.45f, 0.25f, 0.3f);
+            }
             projection.Configure(gameplayCamera, attachSettings, projectionMaterial);
+            tether.Configure(gameplayCamera, handOrigin, tetherMaterial, attachSettings);
+            contactPreview.Configure(gameplayCamera, contactPreviewMaterial, attachSettings);
+            glue.Configure(gameplayCamera, attachmentService, contactPreviewMaterial, attachSettings,
+                AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PcPipelinePath));
             visuals.Configure(
                 attachAbility,
                 targeting,
@@ -243,8 +273,13 @@ namespace Phyzzle.Editor
                 attachmentService,
                 projection,
                 attachSettings,
-                AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PcPipelinePath));
+                AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>(PcPipelinePath),
+                tether,
+                contactPreview);
             EditorUtility.SetDirty(projection);
+            EditorUtility.SetDirty(tether);
+            EditorUtility.SetDirty(contactPreview);
+            EditorUtility.SetDirty(glue);
             EditorUtility.SetDirty(visuals);
             return visuals;
         }

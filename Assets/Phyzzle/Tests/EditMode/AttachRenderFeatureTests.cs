@@ -113,8 +113,7 @@ namespace Phyzzle.Tests
                 roleWithoutDepthMaterial.SetFloat("_ZWrite", 0f);
                 depthProbeMaterial = new Material(opaqueShader);
                 depthProbeMaterial.SetColor("_BaseColor", new Color(0.02f, 0.15f, 1f, 1f));
-                maskProbeMaterial = new Material(compositeMaterial);
-                ConfigureMaskProbeMaterial(maskProbeMaterial);
+                maskProbeMaterial = new Material(Shader.Find("Hidden/Phyzzle/Tests/AttachMaskProbe"));
                 renderFeature.Configure(maskMaterial, compositeMaterial);
                 maskProbeFeature.Configure(maskProbeMaterial);
                 depthProbeFeature.Configure(depthProbeMaterial, Resources.GetBuiltinResource<Mesh>("Cube.fbx"));
@@ -172,8 +171,8 @@ namespace Phyzzle.Tests
 
                 Assert.That(ColorDistance(zeroBlend, zeroBlendRole), Is.LessThan(0.04f),
                     "Zero blend must preserve the true source render even when a role is present.");
-                Assert.That(ColorDistance(zeroBlend, world), Is.GreaterThan(0.08f),
-                    "A non-identity world treatment must visibly differ when blend is one.");
+                Assert.That(ColorDistance(zeroBlend, world), Is.LessThan(0.02f),
+                    "Attach must preserve the color and brightness of unmarked world pixels.");
                 Assert.That(ColorDistance(occludedEligible, world), Is.LessThan(0.06f),
                     "The feature mask must read active scene depth so hidden roles do not composite.");
                 Assert.That(ColorDistance(backfaceEligible, world), Is.LessThan(0.06f),
@@ -257,8 +256,6 @@ namespace Phyzzle.Tests
                 }
 
                 Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, blend);
-                Shader.SetGlobalFloat(AttachVisualShaderIds.WorldSaturation, 0f);
-                Shader.SetGlobalFloat(AttachVisualShaderIds.WorldBrightness, 0.5f);
                 Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, new Color(1f, 0.7f, 0.05f, 1f));
                 Shader.SetGlobalColor(AttachVisualShaderIds.FocusedColor, new Color(1f, 0.9f, 0.2f, 1f));
                 Shader.SetGlobalColor(AttachVisualShaderIds.HeldColor, new Color(0.05f, 0.95f, 0.25f, 1f));
@@ -306,8 +303,6 @@ namespace Phyzzle.Tests
                 roleObject.transform.position = Vector3.forward;
 
                 Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, 1f);
-                Shader.SetGlobalFloat(AttachVisualShaderIds.WorldSaturation, 0f);
-                Shader.SetGlobalFloat(AttachVisualShaderIds.WorldBrightness, 0.5f);
                 Shader.SetGlobalColor(AttachVisualShaderIds.HeldColor, new Color(0.05f, 0.95f, 0.25f, 1f));
                 Shader.SetGlobalFloat(AttachVisualShaderIds.HeldOutlinePixels, 0f);
                 Shader.SetGlobalFloat(AttachVisualShaderIds.HeldPulseSpeed, 0f);
@@ -354,39 +349,23 @@ namespace Phyzzle.Tests
         private static float ColorDistance(Color first, Color second) =>
             Vector3.Distance(new Vector3(first.r, first.g, first.b), new Vector3(second.r, second.g, second.b));
 
-        private static void ConfigureMaskProbeMaterial(Material material)
-        {
-            material.SetFloat(AttachVisualShaderIds.VisualBlend, 1f);
-            material.SetFloat(AttachVisualShaderIds.WorldSaturation, 0f);
-            material.SetFloat(AttachVisualShaderIds.WorldBrightness, 0f);
-            material.SetColor(AttachVisualShaderIds.EligibleColor, Color.red);
-            material.SetColor(AttachVisualShaderIds.FocusedColor, Color.green);
-            material.SetColor(AttachVisualShaderIds.HeldColor, Color.blue);
-            material.SetFloat(AttachVisualShaderIds.EligibleOutlinePixels, 0f);
-            material.SetFloat(AttachVisualShaderIds.FocusedOutlinePixels, 0f);
-            material.SetFloat(AttachVisualShaderIds.HeldOutlinePixels, 0f);
-            material.SetFloat(AttachVisualShaderIds.HeldPulseSpeed, 0f);
-            material.SetFloat(AttachVisualShaderIds.HeldPulseStrength, 0f);
-        }
-
         private readonly struct AttachGlobals
         {
-            private readonly float blend, saturation, brightness, eligibleWidth, focusedWidth, heldWidth, pulseSpeed, pulseStrength;
+            private readonly float blend, eligibleWidth, focusedWidth, heldWidth, pulseSpeed, pulseStrength;
             private readonly Color eligible, focused, held;
             private readonly Texture mask;
 
-            private AttachGlobals(float blend, float saturation, float brightness, Color eligible, Color focused, Color held,
+            private AttachGlobals(float blend, Color eligible, Color focused, Color held,
                 float eligibleWidth, float focusedWidth, float heldWidth, float pulseSpeed, float pulseStrength, Texture mask)
             {
-                this.blend = blend; this.saturation = saturation; this.brightness = brightness;
+                this.blend = blend;
                 this.eligible = eligible; this.focused = focused; this.held = held;
                 this.eligibleWidth = eligibleWidth; this.focusedWidth = focusedWidth; this.heldWidth = heldWidth;
                 this.pulseSpeed = pulseSpeed; this.pulseStrength = pulseStrength; this.mask = mask;
             }
 
             internal static AttachGlobals Capture() => new(
-                Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Shader.GetGlobalFloat(AttachVisualShaderIds.WorldSaturation),
-                Shader.GetGlobalFloat(AttachVisualShaderIds.WorldBrightness), Shader.GetGlobalColor(AttachVisualShaderIds.EligibleColor),
+                Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Shader.GetGlobalColor(AttachVisualShaderIds.EligibleColor),
                 Shader.GetGlobalColor(AttachVisualShaderIds.FocusedColor), Shader.GetGlobalColor(AttachVisualShaderIds.HeldColor),
                 Shader.GetGlobalFloat(AttachVisualShaderIds.EligibleOutlinePixels), Shader.GetGlobalFloat(AttachVisualShaderIds.FocusedOutlinePixels),
                 Shader.GetGlobalFloat(AttachVisualShaderIds.HeldOutlinePixels), Shader.GetGlobalFloat(AttachVisualShaderIds.HeldPulseSpeed),
@@ -394,8 +373,7 @@ namespace Phyzzle.Tests
 
             internal void Restore()
             {
-                Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, blend); Shader.SetGlobalFloat(AttachVisualShaderIds.WorldSaturation, saturation);
-                Shader.SetGlobalFloat(AttachVisualShaderIds.WorldBrightness, brightness); Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, eligible);
+                Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, blend); Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, eligible);
                 Shader.SetGlobalColor(AttachVisualShaderIds.FocusedColor, focused); Shader.SetGlobalColor(AttachVisualShaderIds.HeldColor, held);
                 Shader.SetGlobalFloat(AttachVisualShaderIds.EligibleOutlinePixels, eligibleWidth); Shader.SetGlobalFloat(AttachVisualShaderIds.FocusedOutlinePixels, focusedWidth);
                 Shader.SetGlobalFloat(AttachVisualShaderIds.HeldOutlinePixels, heldWidth); Shader.SetGlobalFloat(AttachVisualShaderIds.HeldPulseSpeed, pulseSpeed);

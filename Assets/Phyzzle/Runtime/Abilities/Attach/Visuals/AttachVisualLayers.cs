@@ -13,8 +13,6 @@ namespace Phyzzle.Abilities.Attach
     internal static class AttachVisualShaderIds
     {
         internal static readonly int VisualBlend = Shader.PropertyToID("_AttachVisualBlend");
-        internal static readonly int WorldSaturation = Shader.PropertyToID("_AttachWorldSaturation");
-        internal static readonly int WorldBrightness = Shader.PropertyToID("_AttachWorldBrightness");
         internal static readonly int EligibleColor = Shader.PropertyToID("_AttachEligibleColor");
         internal static readonly int FocusedColor = Shader.PropertyToID("_AttachFocusedColor");
         internal static readonly int HeldColor = Shader.PropertyToID("_AttachHeldColor");

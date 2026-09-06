@@ -8,6 +8,8 @@ namespace Phyzzle.Abilities.Attach
     public sealed class AttachProjectionRenderer : MonoBehaviour
     {
         private const float PlanarEpsilon = 0.0001f;
+        private const float SurfaceFadeSeconds = 0.16f;
+        private const int DirectionCount = 6;
 
         private readonly List<MeshFilter> meshFilters = new();
         private readonly List<Renderer> renderers = new();
@@ -19,19 +21,33 @@ namespace Phyzzle.Abilities.Attach
         [SerializeField] private Camera camera;
         [SerializeField] private AttachSettings settings;
         [SerializeField] private Material projectionMaterial;
-        private MaterialPropertyBlock[] projectionProperties;
+        private ReceiverSurface[] currentSurfaces;
+        private ReceiverSurface[] retiringSurfaces;
         private Vector3 lastPlanarForward;
 
         internal int LastSubmittedDrawCount { get; private set; }
 
-        private void Awake()
+        private void Awake() => InitializeSurfaces();
+
+        private void InitializeSurfaces()
         {
-            projectionProperties = new[] { new MaterialPropertyBlock(), new MaterialPropertyBlock(),
-                new MaterialPropertyBlock(), new MaterialPropertyBlock(), new MaterialPropertyBlock() };
+            if (currentSurfaces != null)
+            {
+                return;
+            }
+
+            currentSurfaces = new ReceiverSurface[DirectionCount];
+            retiringSurfaces = new ReceiverSurface[DirectionCount];
+            for (int i = 0; i < DirectionCount; i++)
+            {
+                currentSurfaces[i] = new ReceiverSurface();
+                retiringSurfaces[i] = new ReceiverSurface();
+            }
         }
 
         public void Configure(Camera targetCamera, AttachSettings targetSettings, Material targetProjectionMaterial)
         {
+            InitializeSurfaces();
             camera = targetCamera;
             settings = targetSettings;
             projectionMaterial = targetProjectionMaterial;
@@ -71,10 +87,12 @@ namespace Phyzzle.Abilities.Attach
             RemoveDuplicates(colliders);
         }
 
-        internal void Submit()
+        internal void Submit() => Submit(Time.deltaTime);
+
+        internal void Submit(float deltaTime)
         {
             LastSubmittedDrawCount = 0;
-            if (camera == null || settings == null || projectionMaterial == null || projectionProperties == null ||
+            if (camera == null || settings == null || projectionMaterial == null || currentSurfaces == null ||
                 !HasSourceMesh())
             {
                 return;
@@ -92,11 +110,13 @@ namespace Phyzzle.Abilities.Attach
             lastPlanarForward = planarForward;
             Vector3 right = Vector3.Cross(Vector3.up, planarForward);
 
-            SubmitDirection(combinedBounds, Vector3.down, projectionProperties[0]);
-            SubmitDirection(combinedBounds, -right, projectionProperties[1]);
-            SubmitDirection(combinedBounds, right, projectionProperties[2]);
-            SubmitDirection(combinedBounds, planarForward, projectionProperties[3]);
-            SubmitDirection(combinedBounds, -planarForward, projectionProperties[4]);
+            float fadeStep = Mathf.Max(0f, deltaTime) / SurfaceFadeSeconds;
+            SubmitDirection(combinedBounds, Vector3.down, 0, fadeStep);
+            SubmitDirection(combinedBounds, -right, 1, fadeStep);
+            SubmitDirection(combinedBounds, right, 2, fadeStep);
+            SubmitDirection(combinedBounds, planarForward, 3, fadeStep);
+            SubmitDirection(combinedBounds, -planarForward, 4, fadeStep);
+            SubmitDirection(combinedBounds, Vector3.up, 5, fadeStep);
         }
 
         internal void Clear()
@@ -108,6 +128,14 @@ namespace Phyzzle.Abilities.Attach
             rendererScratch.Clear();
             colliderScratch.Clear();
             LastSubmittedDrawCount = 0;
+            if (currentSurfaces != null)
+            {
+                for (int i = 0; i < DirectionCount; i++)
+                {
+                    currentSurfaces[i].Clear();
+                    retiringSurfaces[i].Clear();
+                }
+            }
         }
 
         internal static Vector3 ResolvePlanarForward(Vector3 cameraForward, Vector3 fallbackForward)
@@ -233,27 +261,64 @@ namespace Phyzzle.Abilities.Attach
             return hasBounds;
         }
 
-        private void SubmitDirection(Bounds combinedBounds, Vector3 direction, MaterialPropertyBlock properties)
+        private void SubmitDirection(Bounds combinedBounds, Vector3 direction, int index, float fadeStep)
         {
             Vector3 origin = GetCastOrigin(combinedBounds, direction, settings.projectionSurfaceBias);
-            if (!Physics.Raycast(origin, direction, out RaycastHit hit, settings.projectionMaxDistance,
-                    settings.targetMask, QueryTriggerInteraction.Ignore) ||
-                !TryGetProjectionPlane(hit, direction, settings.projectionParallelThreshold, out Vector4 plane))
+            bool hasHit = Physics.Raycast(origin, direction, out RaycastHit hit, settings.projectionMaxDistance,
+                settings.targetMask, QueryTriggerInteraction.Ignore) &&
+                TryGetProjectionPlane(hit, direction, settings.projectionParallelThreshold, out _);
+
+            ReceiverSurface current = currentSurfaces[index];
+            ReceiverSurface retiring = retiringSurfaces[index];
+            if (hasHit && !current.Matches(hit, settings.projectionDepthTolerance))
+            {
+                // Keep the stronger old surface when several receivers change inside one fade.
+                if (retiring.Matches(hit, settings.projectionDepthTolerance) || current.Opacity >= retiring.Opacity)
+                {
+                    (current, retiring) = (retiring, current);
+                    currentSurfaces[index] = current;
+                    retiringSurfaces[index] = retiring;
+                }
+
+                if (!current.Matches(hit, settings.projectionDepthTolerance))
+                {
+                    current.Clear();
+                }
+            }
+
+            if (hasHit)
+            {
+                current.Capture(hit, direction);
+            }
+
+            current.Fade(hasHit, fadeStep);
+            retiring.Fade(false, fadeStep);
+            DrawSurface(combinedBounds, current);
+            DrawSurface(combinedBounds, retiring);
+        }
+
+        private void DrawSurface(Bounds combinedBounds, ReceiverSurface surface)
+        {
+            if (surface.Opacity <= 0f || !surface.TryGetPlane(out Vector4 plane) ||
+                Mathf.Abs(Vector3.Dot(new Vector3(plane.x, plane.y, plane.z), surface.Direction)) <
+                settings.projectionParallelThreshold)
             {
                 return;
             }
 
+            MaterialPropertyBlock properties = surface.Properties;
             properties.Clear();
             properties.SetVector(AttachVisualShaderIds.ProjectionPlane, plane);
-            properties.SetVector(AttachVisualShaderIds.ProjectionDirection, direction);
-            properties.SetFloat(AttachVisualShaderIds.ProjectionOpacity, settings.projectionOpacity);
+            properties.SetVector(AttachVisualShaderIds.ProjectionDirection, surface.Direction);
+            properties.SetFloat(AttachVisualShaderIds.ProjectionOpacity,
+                settings.projectionOpacity * Mathf.SmoothStep(0f, 1f, surface.Opacity));
             properties.SetFloat(AttachVisualShaderIds.ProjectionBias, settings.projectionSurfaceBias);
             properties.SetFloat(AttachVisualShaderIds.ProjectionDepthTolerance, settings.projectionDepthTolerance);
             RenderParams renderParams = new(projectionMaterial)
             {
                 camera = camera,
                 matProps = properties,
-                worldBounds = ProjectBounds(combinedBounds, direction, plane),
+                worldBounds = ProjectBounds(combinedBounds, surface.Direction, plane),
                 shadowCastingMode = ShadowCastingMode.Off,
                 receiveShadows = false
             };
@@ -272,6 +337,73 @@ namespace Phyzzle.Abilities.Attach
                     Graphics.RenderMesh(renderParams, mesh, submesh, meshFilter.transform.localToWorldMatrix);
                     LastSubmittedDrawCount++;
                 }
+            }
+        }
+
+        internal sealed class ReceiverSurface
+        {
+            internal readonly MaterialPropertyBlock Properties = new();
+            internal Vector3 Direction { get; private set; }
+            internal float Opacity { get; private set; }
+            private Collider receiver;
+            private Vector3 localPoint;
+            private Vector3 localNormal;
+
+            internal bool Matches(RaycastHit hit, float tolerance)
+            {
+                if (receiver != hit.collider || !TryGetPlane(out Vector4 plane))
+                {
+                    return false;
+                }
+
+                Vector3 normal = new(plane.x, plane.y, plane.z);
+                return Vector3.Dot(normal, hit.normal) > 0.95f &&
+                    Mathf.Abs(Vector3.Dot(normal, hit.point) + plane.w) <= Mathf.Max(0.01f, tolerance);
+            }
+
+            internal void Capture(RaycastHit hit, Vector3 direction)
+            {
+                receiver = hit.collider;
+                Transform surface = receiver.transform;
+                localPoint = surface.InverseTransformPoint(hit.point);
+                localNormal = surface.localToWorldMatrix.transpose.MultiplyVector(hit.normal).normalized;
+                Direction = direction;
+            }
+
+            internal bool TryGetPlane(out Vector4 plane)
+            {
+                if (receiver == null || !receiver.enabled || !receiver.gameObject.activeInHierarchy)
+                {
+                    plane = default;
+                    return false;
+                }
+
+                Transform surface = receiver.transform;
+                Vector3 normal = surface.worldToLocalMatrix.transpose.MultiplyVector(localNormal).normalized;
+                Vector3 point = surface.TransformPoint(localPoint);
+                plane = new Vector4(normal.x, normal.y, normal.z, -Vector3.Dot(normal, point));
+                return true;
+            }
+
+            internal void Fade(bool visible, float step)
+            {
+                if (!TryGetPlane(out _))
+                {
+                    Clear();
+                    return;
+                }
+
+                Opacity = Mathf.MoveTowards(Opacity, visible ? 1f : 0f, step);
+                if (!visible && Opacity <= 0f)
+                {
+                    Clear();
+                }
+            }
+
+            internal void Clear()
+            {
+                receiver = null;
+                Opacity = 0f;
             }
         }
 

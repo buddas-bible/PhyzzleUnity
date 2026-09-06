@@ -63,20 +63,25 @@ namespace Phyzzle.Tests
         }
 
         [Test]
-        public void EnsureMaterials_CreatesThreeStableAssetsWithRequiredShaders()
+        public void EnsureMaterials_ReusesAllVisualMaterialsWithRequiredShaders()
         {
             AttachVisualAssets first = AttachVisualAssetBuilder.EnsureMaterials(MaterialsFolder);
             string[] firstGuids = AssetDatabase.FindAssets("t:Material", new[] { MaterialsFolder });
 
             AttachVisualAssets second = AttachVisualAssetBuilder.EnsureMaterials(MaterialsFolder);
 
-            Assert.That(firstGuids, Has.Length.EqualTo(3));
+            Assert.That(firstGuids, Has.Length.EqualTo(5));
+            Material preview = AssetDatabase.LoadAssetAtPath<Material>(MaterialsFolder + "/AttachContactPreview.mat");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(preview.shader.name, Is.EqualTo("Phyzzle/AttachContactPreview"));
             Assert.That(second.Mask, Is.SameAs(first.Mask));
             Assert.That(second.Composite, Is.SameAs(first.Composite));
             Assert.That(second.Projection, Is.SameAs(first.Projection));
+            Assert.That(second.Tether, Is.SameAs(first.Tether));
             Assert.That(first.Mask.shader.name, Is.EqualTo("Hidden/Phyzzle/AttachMask"));
             Assert.That(first.Composite.shader.name, Is.EqualTo("Hidden/Phyzzle/AttachComposite"));
             Assert.That(first.Projection.shader.name, Is.EqualTo("Phyzzle/AttachProjection"));
+            Assert.That(first.Tether.shader.name, Is.EqualTo("Phyzzle/AttachTether"));
             Assert.That(AssetDatabase.FindAssets("t:Material", new[] { MaterialsFolder }),
                 Is.EquivalentTo(firstGuids));
         }
@@ -264,13 +269,26 @@ namespace Phyzzle.Tests
 
             Assert.That(player.GetComponents<AttachVisualController>(), Has.Length.EqualTo(1));
             Assert.That(player.GetComponents<AttachProjectionRenderer>(), Has.Length.EqualTo(1));
+            Assert.That(player.GetComponents<AttachTetherRenderer>(), Has.Length.EqualTo(1));
+            Assert.That(player.GetComponents<AttachContactPreviewRenderer>(), Has.Length.EqualTo(1));
+            Assert.That(player.GetComponents<AttachGlueRenderer>(), Has.Length.EqualTo(1));
             AssertSerializedReferencesArePresent(new SerializedObject(visuals),
                 "ability", "targeting", "holdController", "attachmentService", "projectionRenderer", "settings",
-                "supportedPipeline");
+                "supportedPipeline", "tetherRenderer", "contactPreviewRenderer");
             Assert.That(new SerializedObject(visuals).FindProperty("supportedPipeline").objectReferenceValue,
                 Is.SameAs(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset")));
             AssertSerializedReferencesArePresent(new SerializedObject(projection),
                 "camera", "settings", "projectionMaterial");
+            AttachTetherRenderer tether = player.GetComponent<AttachTetherRenderer>();
+            Assert.That(new SerializedObject(visuals).FindProperty("tetherRenderer").objectReferenceValue,
+                Is.SameAs(tether));
+            AttachContactPreviewRenderer contactPreview = player.GetComponent<AttachContactPreviewRenderer>();
+            AssertSerializedReferencesArePresent(new SerializedObject(contactPreview), "camera", "material", "settings");
+            Assert.That(new SerializedObject(visuals).FindProperty("contactPreviewRenderer").objectReferenceValue,
+                Is.SameAs(contactPreview));
+            AttachGlueRenderer glue = player.GetComponent<AttachGlueRenderer>();
+            AssertSerializedReferencesArePresent(new SerializedObject(glue),
+                "camera", "attachmentService", "material", "settings", "supportedPipeline");
         }
 
         [Test]

@@ -43,3 +43,18 @@ MonoBehaviour:
   selectedMass: 0.1
   selectedInertiaTensor: {x: 100, y: 100, z: 100}
   selectedPhysicsMaterial: {fileID: 13400000, guid: 5ae907fdc4f3b094cba277900ae89bf8, type: 2}
+  visualEnterDuration: 0.14
+  visualExitDuration: 0.16
+  eligibleVisualColor: {r: 0.9098039, g: 0.39607844, b: 0.08627451, a: 1}
+  focusedVisualColor: {r: 1, g: 0.52156866, b: 0.16862746, a: 1}
+  heldVisualColor: {r: 0.2627451, g: 0.9411765, b: 0.5411765, a: 1}
+  eligibleOutlinePixels: 1
+  focusedOutlinePixels: 2.5
+  heldOutlinePixels: 2
+  heldPulseSpeed: 1.2
+  heldPulseStrength: 0.25
+  projectionMaxDistance: 12
+  projectionSurfaceBias: 0.015
+  projectionOpacity: 0.28
+  projectionDepthTolerance: 0.06
+  projectionParallelThreshold: 0.15

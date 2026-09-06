@@ -33,8 +33,6 @@ namespace Phyzzle.Tests
             projectionMaterial = new Material(projection);
             ConfigureProjectionMaterial();
             Shader.SetGlobalFloat("_AttachVisualBlend", 1f);
-            Shader.SetGlobalFloat("_AttachWorldSaturation", 1f);
-            Shader.SetGlobalFloat("_AttachWorldBrightness", 1f);
 
             primaryTarget = CreateTarget();
             secondaryTarget = CreateTarget();
@@ -76,8 +74,6 @@ namespace Phyzzle.Tests
             ReleaseTarget(secondaryTarget);
             Shader.SetGlobalColor("_AttachHeldColor", Color.clear);
             Shader.SetGlobalFloat("_AttachVisualBlend", 0f);
-            Shader.SetGlobalFloat("_AttachWorldSaturation", 0f);
-            Shader.SetGlobalFloat("_AttachWorldBrightness", 0f);
         }
 
         [Test]
@@ -128,7 +124,7 @@ namespace Phyzzle.Tests
             };
             try
             {
-                deeperReceiver.transform.position = new Vector3(0f, -0.054f, 0f);
+                deeperReceiver.transform.position = new Vector3(0f, -0.025f, 0f);
                 deeperReceiver.transform.localScale = new Vector3(0.8f, 0.02f, 0.8f);
                 deeperReceiver.GetComponent<Renderer>().sharedMaterial = deeperMaterial;
 
@@ -192,6 +188,30 @@ namespace Phyzzle.Tests
             Assert.That(cleaned.g, Is.EqualTo(baseline.g).Within(0.02f),
                 "Hard cleanup must not leak a visible projection into the next draw.");
             Assert.That(cleaned.b, Is.EqualTo(baseline.b).Within(0.02f));
+        }
+
+        [Test]
+        public void Projection_FadesAcrossDepthToleranceBeforeClippingOutsideIt()
+        {
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color near = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            platform.transform.position += Vector3.down * 0.03f;
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color edge = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            platform.transform.position += Vector3.down * 0.04f;
+            SubmitToPrimaryCamera();
+            primaryCamera.Render();
+            Color outside = ReadPixel(primaryTarget, TextureSize / 2, TextureSize / 2);
+
+            Assert.That(near.g, Is.GreaterThan(edge.g + 0.1f));
+            Assert.That(edge.g, Is.GreaterThan(outside.g + 0.1f),
+                "Receiver intersections must lose alpha gradually before the depth limit.");
+            Assert.That(outside.g, Is.LessThan(0.06f),
+                "Smoothing must not project color beyond the configured receiver depth tolerance.");
         }
 
         private void SubmitToPrimaryCamera()
