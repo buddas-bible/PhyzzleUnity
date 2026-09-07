@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 부착 대상을 들고 있는 동안 입력, 회전, 위치 제한과 물리 추종을 조율한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class AttachHoldController : MonoBehaviour
     {
@@ -16,6 +19,9 @@ namespace Phyzzle.Abilities.Attach
         public bool IsHolding => session.IsHolding;
         public AttachableObject HeldObject => session.HeldObject;
 
+        /// <summary>
+        /// 들기 처리에 필요한 플레이어, 부착 서비스와 설정 참조를 구성한다.
+        /// </summary>
         public void Configure(
             Transform model,
             Rigidbody playerRigidbody,
@@ -28,6 +34,9 @@ namespace Phyzzle.Abilities.Attach
             settings = attachSettings;
         }
 
+        /// <summary>
+        /// 지정된 대상을 들기 세션으로 전환하고 초기 목표 위치를 제한 범위에 맞춘다.
+        /// </summary>
         public bool Begin(AttachableObject target)
         {
             if (target == null || target.Body == null || target.Body.isKinematic ||
@@ -45,6 +54,9 @@ namespace Phyzzle.Abilities.Attach
             return true;
         }
 
+        /// <summary>
+        /// 플레이어 입력으로 들고 있는 대상의 이동과 회전 목표를 갱신한다.
+        /// </summary>
         public void TickUpdate(Player.PlayerInputReader input, float deltaTime)
         {
             if (!IsHolding || session.HeldObject.Body == null || input == null || settings == null)
@@ -81,26 +93,41 @@ namespace Phyzzle.Abilities.Attach
             ClampTargetPosition();
         }
 
+        /// <summary>
+        /// 현재 들기 세션의 목표 자세를 따라가도록 물리 힘을 적용한다.
+        /// </summary>
         public void TickFixed(float fixedDeltaTime)
         {
             holdPhysics.Tick(session, playerModel, playerBody, settings, fixedDeltaTime);
         }
 
+        /// <summary>
+        /// 현재 들고 있는 대상을 주변 오브젝트에 부착하려고 시도한다.
+        /// </summary>
         public bool TryAttach()
         {
             return IsHolding && attachmentService != null && attachmentService.TryAttach(session.HeldObject);
         }
 
+        /// <summary>
+        /// 현재 들고 있는 대상의 기존 부착 연결을 해제한다.
+        /// </summary>
         public bool DetachHeldObject()
         {
             return IsHolding && attachmentService != null && attachmentService.Detach(session.HeldObject);
         }
 
+        /// <summary>
+        /// 현재 들기 세션을 종료하고 선택 상태를 정리한다.
+        /// </summary>
         public void Release()
         {
             session.Release(attachmentService);
         }
 
+        /// <summary>
+        /// 방향 패드의 단발 입력에 맞춰 목표 회전을 단계적으로 변경한다.
+        /// </summary>
         private void StepRotation(Vector2 dpad)
         {
             if (dpad.y > 0.5f)
@@ -122,6 +149,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 방향 패드와 트리거 입력으로 목표 회전을 연속적으로 미세 조정한다.
+        /// </summary>
         private void AdjustRotation(Vector2 dpad, float trigger, float deltaTime)
         {
             float degrees = settings.fineAdjustmentSpeed * trigger * deltaTime;
@@ -144,6 +174,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 시점 입력에 따라 플레이어를 선회시키고 대상의 높이를 조정한다.
+        /// </summary>
         private void OrbitAndLift(Vector2 look, float deltaTime)
         {
             float radius = Mathf.Max(settings.minTargetZ, session.TargetLocalPosition.z);
@@ -170,6 +203,9 @@ namespace Phyzzle.Abilities.Attach
                 settings.targetPositionOffset);
         }
 
+        /// <summary>
+        /// 현재 부착 섬의 경계를 고려해 목표 위치를 허용 범위 안으로 보정한다.
+        /// </summary>
         private void ClampTargetPosition()
         {
             bool hasBounds = AttachHoldConstraints.TryComputeIslandLocalBounds(

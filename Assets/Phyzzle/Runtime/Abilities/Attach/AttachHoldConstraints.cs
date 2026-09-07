@@ -2,8 +2,14 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 들고 있는 부착 오브젝트의 이동 범위와 회전·높이 제한을 계산한다.
+    /// </summary>
     internal static class AttachHoldConstraints
     {
+        /// <summary>
+        /// 대상 위치가 허용된 높이와 깊이 범위를 벗어나지 않도록 보정한다.
+        /// </summary>
         internal static Vector3 ClampTargetForBounds(
             Vector3 targetLocalPosition,
             float islandMinimumZ,
@@ -28,6 +34,9 @@ namespace Phyzzle.Abilities.Attach
             return targetLocalPosition;
         }
 
+        /// <summary>
+        /// 부착 섬 전체가 후보 자세에 있을 때 플레이어 로컬 공간에서 차지하는 경계를 계산한다.
+        /// </summary>
         internal static bool TryComputeIslandLocalBounds(
             AttachableObject heldObject,
             System.Collections.Generic.IReadOnlyCollection<AttachableObject> island,
@@ -95,6 +104,9 @@ namespace Phyzzle.Abilities.Attach
             return found;
         }
 
+        /// <summary>
+        /// 들고 있는 오브젝트와의 거리 제한을 유지하도록 플레이어의 수평 회전을 제한한다.
+        /// </summary>
         internal static Quaternion LimitOrbit(
             Quaternion currentPlayerRotation,
             Quaternion desiredPlayerRotation,
@@ -124,6 +136,9 @@ namespace Phyzzle.Abilities.Attach
                 : currentPlayerRotation;
         }
 
+        /// <summary>
+        /// 대상과의 수직 거리 제한을 유지하도록 들기 위치를 보정한다.
+        /// </summary>
         internal static Vector3 LimitLift(
             Vector3 candidateLocalTarget,
             Vector3 playerPosition,
