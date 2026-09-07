@@ -4,6 +4,9 @@ using UnityEngine.Rendering;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// AttachmentService가 소유한 실제 FixedJoint 연결마다 글루 메시를 생성해 렌더링한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class AttachGlueRenderer : MonoBehaviour
     {
@@ -20,6 +23,9 @@ namespace Phyzzle.Abilities.Attach
 
         internal int LastSubmittedDrawCount { get; private set; }
 
+        /// <summary>
+        /// 글루 렌더링에 사용할 카메라, 부착 서비스, 재질, 설정과 렌더 파이프라인을 구성한다.
+        /// </summary>
         public void Configure(Camera renderCamera, AttachmentService service, Material glueMaterial,
             AttachSettings attachSettings, RenderPipelineAsset pipeline)
         {
@@ -31,10 +37,24 @@ namespace Phyzzle.Abilities.Attach
             supportedPipeline = pipeline;
         }
 
+        /// <summary>
+        /// LateUpdate에서 현재 부착 연결의 글루 시각 효과를 갱신한다.
+        /// </summary>
         private void LateUpdate() => TickVisual();
+
+        /// <summary>
+        /// 비활성화될 때 생성한 글루 렌더링 리소스를 정리한다.
+        /// </summary>
         private void OnDisable() => Clear();
+
+        /// <summary>
+        /// 파괴될 때 생성한 글루 렌더링 리소스를 정리한다.
+        /// </summary>
         private void OnDestroy() => Clear();
 
+        /// <summary>
+        /// 현재 실제 조인트 목록을 읽고 각 연결 앵커 사이에 글루 드로우를 제출한다.
+        /// </summary>
         internal void TickVisual()
         {
             LastSubmittedDrawCount = 0;
@@ -76,6 +96,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 더 이상 실제 조인트 목록에 없는 연결의 글루 메시를 찾아 해제하고 제거한다.
+        /// </summary>
         private void RemoveMissingConnections()
         {
             removedJoints.Clear();
@@ -95,6 +118,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 모든 글루 메시와 캐시된 연결 목록, 제출 횟수를 초기화한다.
+        /// </summary>
         private void Clear()
         {
             foreach (AttachGlueMesh blob in blobs.Values)

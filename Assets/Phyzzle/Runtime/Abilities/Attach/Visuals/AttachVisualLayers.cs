@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 부착 선택 시각 효과가 점유하는 Rendering Layer 비트를 정의한다.
+    /// </summary>
     internal static class AttachVisualLayers
     {
         internal const uint Eligible = 1u << 26;
@@ -10,6 +13,9 @@ namespace Phyzzle.Abilities.Attach
         internal const uint Owned = Eligible | Focused | Held;
     }
 
+    /// <summary>
+    /// 부착 시각 효과 셰이더에서 공유하는 전역 프로퍼티 ID를 제공한다.
+    /// </summary>
     internal static class AttachVisualShaderIds
     {
         internal static readonly int VisualBlend = Shader.PropertyToID("_AttachVisualBlend");
@@ -28,6 +34,9 @@ namespace Phyzzle.Abilities.Attach
         internal static readonly int ProjectionBias = Shader.PropertyToID("_AttachProjectionBias");
         internal static readonly int ProjectionDepthTolerance = Shader.PropertyToID("_AttachProjectionDepthTolerance");
 
+        /// <summary>
+        /// Unity 서브시스템 재등록 시 이전 플레이 세션의 전역 부착 시각 상태를 초기화한다.
+        /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOnSubsystemRegistration()
         {

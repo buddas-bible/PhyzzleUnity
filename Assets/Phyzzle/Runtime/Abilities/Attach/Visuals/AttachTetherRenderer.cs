@@ -3,6 +3,9 @@ using UnityEngine.Rendering;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 플레이어 손 원점과 들고 있는 오브젝트 사이의 곡선형 테더 리본을 렌더링한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class AttachTetherRenderer : MonoBehaviour
     {
@@ -28,6 +31,9 @@ namespace Phyzzle.Abilities.Attach
         internal Mesh RibbonMesh => mesh;
         internal int LastSubmittedDrawCount { get; private set; }
 
+        /// <summary>
+        /// 테더 렌더링에 사용할 카메라, 시작점, 재질과 부착 설정을 구성한다.
+        /// </summary>
         public void Configure(Camera targetCamera, Transform handOrigin, Material tetherMaterial,
             AttachSettings attachSettings)
         {
@@ -38,6 +44,9 @@ namespace Phyzzle.Abilities.Attach
             settings = attachSettings;
         }
 
+        /// <summary>
+        /// 손과 들고 있는 오브젝트의 렌더 위치 사이에 리본 메시를 갱신하고 드로우를 제출한다.
+        /// </summary>
         internal void Submit(AttachableObject held, float blend)
         {
             if (!isActiveAndEnabled || camera == null || !camera.isActiveAndEnabled ||
@@ -76,6 +85,9 @@ namespace Phyzzle.Abilities.Attach
             LastSubmittedDrawCount = 1;
         }
 
+        /// <summary>
+        /// 현재 테더 드로우 상태와 임시 리본 메시를 초기화한다.
+        /// </summary>
         internal void Clear()
         {
             LastSubmittedDrawCount = 0;
@@ -85,8 +97,14 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 비활성화될 때 남아 있는 테더 메시를 제거한다.
+        /// </summary>
         private void OnDisable() => Clear();
 
+        /// <summary>
+        /// 파괴될 때 동적으로 생성한 테더 메시를 해제한다.
+        /// </summary>
         private void OnDestroy()
         {
             Clear();
@@ -97,6 +115,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 테더 메시와 속성 블록을 생성하고 재사용할 리본 토폴로지를 준비한다.
+        /// </summary>
         private void EnsureMesh()
         {
             if (mesh != null)
@@ -128,6 +149,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 두 끝점 사이에 곡선과 파동을 적용한 카메라 대응 리본 정점을 갱신한다.
+        /// </summary>
         private void UpdateRibbon(Vector3 start, Vector3 end, float length)
         {
             Vector3 side = Vector3.Cross((end - start) / length, Vector3.up);

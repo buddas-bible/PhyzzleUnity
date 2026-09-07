@@ -4,6 +4,9 @@ using UnityEngine.Rendering;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 두 부착 앵커를 잇는 캡슐형 글루 메시를 동적으로 생성하고 즉시 렌더링한다.
+    /// </summary>
     internal sealed class AttachGlueMesh : IDisposable
     {
         private const int Rings = 12;
@@ -20,6 +23,9 @@ namespace Phyzzle.Abilities.Attach
 
         internal Mesh Mesh => mesh;
 
+        /// <summary>
+        /// 앵커 위치와 반경으로 글루 메시를 갱신하고 지정한 카메라에 드로우를 제출한다.
+        /// </summary>
         internal bool Submit(Camera camera, Material material, Vector3 start, Vector3 end, float radius,
             Color color, float animationTime)
         {
@@ -47,6 +53,9 @@ namespace Phyzzle.Abilities.Attach
             return true;
         }
 
+        /// <summary>
+        /// 같은 프레임의 오래된 드로우가 남지 않도록 현재 메시 내용을 비운다.
+        /// </summary>
         internal void Clear()
         {
             // Clear the retained mesh so a draw queued earlier this frame cannot leave a stale cue.
@@ -56,6 +65,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 동적으로 생성한 메시와 속성 블록을 정리한다.
+        /// </summary>
         public void Dispose()
         {
             Clear();
@@ -77,13 +89,22 @@ namespace Phyzzle.Abilities.Attach
             properties = null;
         }
 
+        /// <summary>
+        /// 벡터의 모든 성분이 유한한 값인지 확인한다.
+        /// </summary>
         private static bool IsFinite(Vector3 value) =>
             float.IsFinite(value.x) && float.IsFinite(value.y) && float.IsFinite(value.z);
 
+        /// <summary>
+        /// 색상의 모든 성분이 유한한 값인지 확인한다.
+        /// </summary>
         private static bool IsFinite(Color value) =>
             float.IsFinite(value.r) && float.IsFinite(value.g) &&
             float.IsFinite(value.b) && float.IsFinite(value.a);
 
+        /// <summary>
+        /// 메시와 속성 블록을 생성하고 재사용할 구면 토폴로지 정보를 준비한다.
+        /// </summary>
         private void EnsureMesh()
         {
             if (mesh != null)
@@ -120,6 +141,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 두 앵커 사이의 길이와 방향에 맞춰 글루 메시 정점, 노멀과 경계를 갱신한다.
+        /// </summary>
         private void UpdateBlob(Vector3 start, Vector3 end, float radius)
         {
             Vector3 difference = end - start;
