@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 부착 능력의 대상 검색, 들기 물리, 회전과 시각 효과에 사용할 튜닝 값을 보관한다.
+    /// </summary>
     [CreateAssetMenu(fileName = "AttachSettings", menuName = "Phyzzle/Abilities/Attach Settings")]
     public sealed class AttachSettings : ScriptableObject
     {

@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Rewind
 {
+    /// <summary>
+    /// 되감기 기록·재생, 대상 검색과 선택 시각 효과에 사용할 튜닝 값을 보관한다.
+    /// </summary>
     [CreateAssetMenu(fileName = "RewindSettings", menuName = "Phyzzle/Abilities/Rewind Settings")]
     public sealed class RewindSettings : ScriptableObject
     {
@@ -30,6 +33,9 @@ namespace Phyzzle.Abilities.Rewind
         [Range(2, 12)] public int previewGhostCount = 8;
         [Range(0f, 1f)] public float previewGhostAlpha = 0.28f;
 
+        /// <summary>
+        /// 기록 시간과 고정 프레임 간격을 기준으로 필요한 히스토리 버퍼 용량을 계산한다.
+        /// </summary>
         public int GetHistoryCapacity(float fixedDeltaTime) =>
             Mathf.Max(2, Mathf.RoundToInt(historyDuration / Mathf.Max(0.000001f, fixedDeltaTime)) + 1);
     }
