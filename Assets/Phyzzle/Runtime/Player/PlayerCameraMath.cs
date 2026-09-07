@@ -2,8 +2,14 @@ using UnityEngine;
 
 namespace Phyzzle.Player
 {
+    /// <summary>
+    /// 플레이어 카메라 위치와 들기 상태 카메라 자세를 계산하는 순수 함수를 제공한다.
+    /// </summary>
     public static class PlayerCameraMath
     {
+        /// <summary>
+        /// 카메라 피치에 따라 보간된 로컬 Z 위치를 계산한다.
+        /// </summary>
         public static float EvaluateLocalZ(
             float pitch,
             float defaultLocalZ,
@@ -24,6 +30,9 @@ namespace Phyzzle.Player
             return defaultLocalZ + (lowPitchLocalZ - defaultLocalZ) * lowEased;
         }
 
+        /// <summary>
+        /// 들고 있는 대상의 상대 위치를 기준으로 카메라 로컬 위치와 회전을 계산한다.
+        /// </summary>
         public static void EvaluateHoldingPose(
             Vector3 relativePosition,
             PlayerCameraSettings settings,

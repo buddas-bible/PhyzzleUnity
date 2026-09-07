@@ -4,6 +4,9 @@ using Phyzzle.Compatibility;
 
 namespace Phyzzle.Player
 {
+    /// <summary>
+    /// 플레이어의 지상·공중 이동, 점프, 충돌 반응과 이동 방향 회전을 처리한다.
+    /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     public sealed class PlayerMotor : MonoBehaviour
@@ -32,16 +35,25 @@ namespace Phyzzle.Player
         public Rigidbody Body => body;
         public bool MovementFacingEnabled => movementFacingEnabled;
 
+        /// <summary>
+        /// 인스펙터 초기화 시 동일 오브젝트의 Rigidbody 참조를 자동으로 연결한다.
+        /// </summary>
         private void Reset()
         {
             body = GetComponent<Rigidbody>();
         }
 
+        /// <summary>
+        /// 런타임 시작 시 Rigidbody 참조가 비어 있으면 자동으로 찾는다.
+        /// </summary>
         private void Awake()
         {
             body ??= GetComponent<Rigidbody>();
         }
 
+        /// <summary>
+        /// 플레이어 이동에 필요한 물리, 지면 감지, 기준 Transform과 설정을 구성한다.
+        /// </summary>
         public void Configure(
             Rigidbody rigidbody,
             PlayerGroundSensor sensor,
@@ -56,21 +68,33 @@ namespace Phyzzle.Player
             settings = movementSettings;
         }
 
+        /// <summary>
+        /// 능력 등 외부 시스템이 사용할 임시 이동 속도를 설정한다.
+        /// </summary>
         public void SetSpeedOverride(float speed)
         {
             speedOverride = speed;
         }
 
+        /// <summary>
+        /// 임시 이동 속도를 해제하고 기본 설정 속도를 사용하도록 복원한다.
+        /// </summary>
         public void ClearSpeedOverride()
         {
             speedOverride = -1f;
         }
 
+        /// <summary>
+        /// 이동 방향을 바라보도록 모델을 회전시키는 기능의 사용 여부를 설정한다.
+        /// </summary>
         public void SetMovementFacingEnabled(bool enabled)
         {
             movementFacingEnabled = enabled;
         }
 
+        /// <summary>
+        /// 고정 프레임마다 지면 상태, 점프, 지상·공중 이동을 갱신한다.
+        /// </summary>
         public void TickFixed(Vector2 moveInput, bool jumpPressed, bool allowControl)
         {
             if (!IsConfigured())
@@ -102,11 +126,17 @@ namespace Phyzzle.Player
             }
         }
 
+        /// <summary>
+        /// 이동 계산에 필요한 핵심 참조와 설정이 준비됐는지 확인한다.
+        /// </summary>
         private bool IsConfigured()
         {
             return body != null && movementReference != null && settings != null;
         }
 
+        /// <summary>
+        /// 센서와 레이캐스트를 이용해 접지 여부, 지면 법선과 허용 경사를 갱신한다.
+        /// </summary>
         private void UpdateGroundState()
         {
             IsGrounded = groundSensor != null && groundSensor.IsGrounded;
@@ -136,6 +166,9 @@ namespace Phyzzle.Player
             IsOnStandableSlope = slope <= settings.slopeLimitDegrees;
         }
 
+        /// <summary>
+        /// 접지 및 경사 조건이 유효할 때 점프 가속도를 적용한다.
+        /// </summary>
         private bool TryJump()
         {
             if (!IsGrounded || !IsOnStandableSlope)
@@ -149,6 +182,9 @@ namespace Phyzzle.Player
             return true;
         }
 
+        /// <summary>
+        /// 현재 접지 상태에 따라 지상 또는 공중 이동을 적용하고 이동 방향을 갱신한다.
+        /// </summary>
         private void ApplyMovement(Vector2 input)
         {
             Vector3 currentVelocity = PlayerMovementMath.ClampVerticalSpeed(
@@ -174,6 +210,9 @@ namespace Phyzzle.Player
             }
         }
 
+        /// <summary>
+        /// 경사면을 고려한 목표 속도를 계산해 지상 이동에 적용한다.
+        /// </summary>
         private void ApplyGroundMovement(Vector2 input, Vector3 currentVelocity)
         {
             Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(
@@ -200,6 +239,9 @@ namespace Phyzzle.Player
                 ForceMode.VelocityChange);
         }
 
+        /// <summary>
+        /// 공중 입력 방향과 가속 제한을 적용해 공중 제어를 처리한다.
+        /// </summary>
         private void ApplyAirMovement(Vector2 input, Vector3 currentVelocity)
         {
             Vector3 wishDirection = PlayerMovementMath.CameraRelativeDirection(
@@ -244,6 +286,9 @@ namespace Phyzzle.Player
                 ForceMode.VelocityChange);
         }
 
+        /// <summary>
+        /// 입력 크기와 방향 정렬, 속도 설정을 이용해 목표 이동 속도를 계산한다.
+        /// </summary>
         private Vector3 CalculateTargetVelocity(
             Vector2 input,
             Vector3 originDirection,
@@ -259,6 +304,9 @@ namespace Phyzzle.Player
             return direction * (movementSpeed * input.magnitude * alignment);
         }
 
+        /// <summary>
+        /// 현재 수평 이동 속도 방향을 바라보도록 모델을 회전시킨다.
+        /// </summary>
         private void FaceMovementDirection(Vector3 worldVelocity)
         {
             if (modelRoot == null)
@@ -275,6 +323,9 @@ namespace Phyzzle.Player
             modelRoot.rotation = Quaternion.LookRotation(worldVelocity.normalized, Vector3.up);
         }
 
+        /// <summary>
+        /// 리지드바디의 수직 속도를 설정된 최대값으로 제한한다.
+        /// </summary>
         private void ClampVerticalVelocity()
         {
             body.linearVelocity = PlayerMovementMath.ClampVerticalSpeed(
@@ -282,6 +333,9 @@ namespace Phyzzle.Player
                 settings.maxVerticalSpeed);
         }
 
+        /// <summary>
+        /// 충돌에서 예약된 비행 충격량을 플레이어에 적용하고 소모한다.
+        /// </summary>
         private void ApplyPendingImpulse()
         {
             if (pendingFlyingVelocity.sqrMagnitude > 0f)
@@ -293,6 +347,9 @@ namespace Phyzzle.Player
             }
         }
 
+        /// <summary>
+        /// 비행 상태의 남은 지속 시간을 고정 프레임 기준으로 감소시킨다.
+        /// </summary>
         private void UpdateFlyingTimer()
         {
             if (flyingTimeRemaining > 0f)
@@ -301,16 +358,25 @@ namespace Phyzzle.Player
             }
         }
 
+        /// <summary>
+        /// 새 충돌이 시작되면 플랫폼 이동과 충격 반응 정보를 읽는다.
+        /// </summary>
         private void OnCollisionEnter(Collision collision)
         {
             ReadCollision(collision);
         }
 
+        /// <summary>
+        /// 충돌이 유지되는 동안 플랫폼 이동과 충격 반응 정보를 계속 갱신한다.
+        /// </summary>
         private void OnCollisionStay(Collision collision)
         {
             ReadCollision(collision);
         }
 
+        /// <summary>
+        /// 충돌 상대의 플랫폼 속도와 충격량을 분석해 플레이어 이동 상태에 반영한다.
+        /// </summary>
         private void ReadCollision(Collision collision)
         {
             if (collision == null || settings == null)
