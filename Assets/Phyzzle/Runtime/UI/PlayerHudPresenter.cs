@@ -6,8 +6,14 @@ using UnityEngine;
 
 namespace Phyzzle.UI
 {
+    /// <summary>
+    /// 개별 능력의 런타임 상태를 하나의 PlayerHudState로 조합한다.
+    /// </summary>
     public static class PlayerHudPresenterState
     {
+        /// <summary>
+        /// 부착·되감기 상태와 현재 입력 정보를 HUD가 사용할 논리 상태로 변환한다.
+        /// </summary>
         public static PlayerHudState Build(
             AttachAbilityController.AbilityState attachState,
             bool attachHasTarget,
@@ -52,6 +58,9 @@ namespace Phyzzle.UI
         }
     }
 
+    /// <summary>
+    /// 플레이어와 능력 시스템 상태를 매 프레임 읽어 HUD View에 표시 상태를 전달한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerHudPresenter : MonoBehaviour
     {
@@ -68,6 +77,9 @@ namespace Phyzzle.UI
         private PlayerAbilityController.AbilityKind lastSelectedAbility;
         private float abilitySelectionRemaining;
 
+        /// <summary>
+        /// HUD 상태 계산에 사용할 입력, 능력 시스템과 View 참조를 구성한다.
+        /// </summary>
         public void Configure(
             PlayerInputReader inputReader,
             PlayerAbilityController playerAbilityController,
@@ -88,6 +100,9 @@ namespace Phyzzle.UI
             abilitySelectionRemaining = 0f;
         }
 
+        /// <summary>
+        /// 능력 선택 컨트롤러 없이 사용할 수 있도록 기본 HUD 참조만 구성한다.
+        /// </summary>
         public void Configure(
             PlayerInputReader inputReader,
             AttachAbilityController attachController,
@@ -106,12 +121,18 @@ namespace Phyzzle.UI
                 hudView);
         }
 
+        /// <summary>
+        /// 활성화될 때 능력 선택 표시 타이머와 관찰 상태를 초기화한다.
+        /// </summary>
         private void OnEnable()
         {
             hasObservedAbility = false;
             abilitySelectionRemaining = 0f;
         }
 
+        /// <summary>
+        /// 능력·입력·부착 섬 상태를 읽어 현재 HUD 상태를 계산하고 View를 갱신한다.
+        /// </summary>
         private void LateUpdate()
         {
             if (view == null)

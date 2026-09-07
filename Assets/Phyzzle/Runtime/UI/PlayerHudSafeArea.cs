@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.UI
 {
+    /// <summary>
+    /// HUD RectTransform을 현재 디스플레이의 안전 영역 안에 맞춰 자동 조정한다.
+    /// </summary>
     [ExecuteAlways]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
@@ -10,11 +13,17 @@ namespace Phyzzle.UI
         private Rect lastSafeArea = new(-1f, -1f, -1f, -1f);
         private Vector2 lastScreenSize = new(-1f, -1f);
 
+        /// <summary>
+        /// 활성화될 때 현재 화면 안전 영역을 즉시 적용한다.
+        /// </summary>
         private void OnEnable()
         {
             Refresh();
         }
 
+        /// <summary>
+        /// 화면 크기나 안전 영역이 변경되었을 때만 HUD 앵커를 다시 적용한다.
+        /// </summary>
         private void Update()
         {
             Rect safeArea = Screen.safeArea;
@@ -25,11 +34,17 @@ namespace Phyzzle.UI
             }
         }
 
+        /// <summary>
+        /// 현재 화면 크기와 안전 영역을 기준으로 HUD 배치를 강제로 갱신한다.
+        /// </summary>
         public void Refresh()
         {
             Apply(Screen.safeArea, new Vector2(Screen.width, Screen.height));
         }
 
+        /// <summary>
+        /// 픽셀 단위 안전 영역을 0~1 범위의 RectTransform 앵커 값으로 변환한다.
+        /// </summary>
         public static void CalculateAnchors(
             Rect safeArea,
             Vector2 screenSize,
@@ -52,6 +67,9 @@ namespace Phyzzle.UI
             anchorMax = Vector2.Max(anchorMin, anchorMax);
         }
 
+        /// <summary>
+        /// 계산된 안전 영역 앵커를 RectTransform에 적용하고 마지막 상태를 캐시한다.
+        /// </summary>
         private void Apply(Rect safeArea, Vector2 screenSize)
         {
             CalculateAnchors(safeArea, screenSize, out Vector2 min, out Vector2 max);
