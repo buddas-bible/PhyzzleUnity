@@ -3,11 +3,17 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 부착 회전에 사용할 기준 자세 집합을 생성하고 가장 가까운 자세를 검색한다.
+    /// </summary>
     internal static class AttachmentRotationCatalog
     {
         private static readonly IReadOnlyList<AttachRotationPose> poses = Build();
         internal static IReadOnlyList<AttachRotationPose> Poses => poses;
 
+        /// <summary>
+        /// 입력 회전과 쿼터니언 내적이 가장 가까운 기준 자세를 찾는다.
+        /// </summary>
         internal static AttachRotationPose FindNearest(Quaternion rotation)
         {
             Quaternion normalized = Normalize(rotation);
@@ -26,6 +32,9 @@ namespace Phyzzle.Abilities.Attach
             return best;
         }
 
+        /// <summary>
+        /// 직교 및 45도 조합으로 사용할 전체 기준 회전 자세 목록을 생성한다.
+        /// </summary>
         private static IReadOnlyList<AttachRotationPose> Build()
         {
             List<Quaternion> majorAxes = new();
@@ -59,6 +68,9 @@ namespace Phyzzle.Abilities.Attach
             return result.AsReadOnly();
         }
 
+        /// <summary>
+        /// 지정한 회전 열을 자세 유형과 함께 출력 컬렉션에 추가한다.
+        /// </summary>
         private static void Add(
             ICollection<AttachRotationPose> output,
             IEnumerable<Quaternion> rotations,
@@ -70,6 +82,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 입력 회전 목록에 지정한 축 회전을 곱한 새로운 목록을 생성한다.
+        /// </summary>
         private static List<Quaternion> Multiply(
             IEnumerable<Quaternion> source, float degrees, Vector3 axis)
         {
@@ -82,6 +97,9 @@ namespace Phyzzle.Abilities.Attach
             return output;
         }
 
+        /// <summary>
+        /// 유효한 쿼터니언을 단위 크기로 정규화하고 잘못된 값은 항등 회전으로 복원한다.
+        /// </summary>
         internal static Quaternion Normalize(Quaternion value)
         {
             float magnitude = Mathf.Sqrt(value.x * value.x + value.y * value.y +
