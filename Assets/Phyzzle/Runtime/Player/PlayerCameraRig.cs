@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Player
 {
+    /// <summary>
+    /// 플레이어 카메라의 회전, 충돌 회피, 능력·들기 상태 자세와 모델 가시성을 제어한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerCameraRig : MonoBehaviour
     {
@@ -27,11 +30,17 @@ namespace Phyzzle.Player
         public Transform MovementReference => cameraArm;
         public float Pitch => pitch;
 
+        /// <summary>
+        /// 런타임 시작 시 카메라 기본 자세와 렌더러 참조를 초기화한다.
+        /// </summary>
         private void Awake()
         {
             Initialize();
         }
 
+        /// <summary>
+        /// 카메라 리그에 사용할 Transform과 설정을 구성하고 기본 자세를 다시 초기화한다.
+        /// </summary>
         public void Configure(
             Transform arm,
             Transform core,
@@ -46,11 +55,17 @@ namespace Phyzzle.Player
             Initialize();
         }
 
+        /// <summary>
+        /// 능력 선택 중 사용할 추가 카메라 오프셋의 활성 여부를 설정한다.
+        /// </summary>
         public void SetAbilityCamera(bool enabled)
         {
             abilityCamera = enabled;
         }
 
+        /// <summary>
+        /// 현재 카메라 월드 자세를 유지한 채 들고 있는 대상을 추적하는 카메라 상태로 전환한다.
+        /// </summary>
         public void EnterHoldingCamera(Transform heldTarget)
         {
             if (!Initialize() || heldTarget == null)
@@ -73,6 +88,9 @@ namespace Phyzzle.Player
             holdingCamera = true;
         }
 
+        /// <summary>
+        /// 들기 카메라 상태를 종료하고 기본 카메라 목표 자세로 복귀한다.
+        /// </summary>
         public void ExitHoldingCamera()
         {
             if (!Initialize())
@@ -87,9 +105,15 @@ namespace Phyzzle.Player
             previousCollisionDistance = float.PositiveInfinity;
         }
 
+        /// <summary>
+        /// 일반 축 입력으로 카메라의 LateUpdate 처리를 갱신한다.
+        /// </summary>
         public void TickLate(Vector2 lookInput, bool allowInput)
             => TickLate(lookInput, allowInput, false);
 
+        /// <summary>
+        /// 시점 입력 또는 들기 상태를 반영하고 카메라 충돌과 모델 가시성을 갱신한다.
+        /// </summary>
         public void TickLate(Vector2 lookInput, bool allowInput, bool lookIsPointerDelta)
         {
             if (!Initialize())
@@ -119,6 +143,9 @@ namespace Phyzzle.Player
             UpdateModelVisibility();
         }
 
+        /// <summary>
+        /// 카메라 리그의 회전, 위치와 들기 상태를 초기 기본값으로 되돌린다.
+        /// </summary>
         public void ResetRig()
         {
             if (!Initialize())
@@ -138,6 +165,9 @@ namespace Phyzzle.Player
             holdingCamera = false;
         }
 
+        /// <summary>
+        /// 카메라 기본 자세와 플레이어 모델 렌더러를 한 번만 캐시한다.
+        /// </summary>
         private bool Initialize()
         {
             if (initialized)
@@ -163,6 +193,9 @@ namespace Phyzzle.Player
             return true;
         }
 
+        /// <summary>
+        /// 시점 입력으로 카메라 암의 수평 회전과 제한된 피치 회전을 적용한다.
+        /// </summary>
         private void RotateArm(Vector2 lookInput, float deltaTime)
         {
             float yaw = lookInput.x * settings.sensitivity * deltaTime;
@@ -179,6 +212,9 @@ namespace Phyzzle.Player
             cameraArm.Rotate(cameraArm.right, appliedPitch, Space.World);
         }
 
+        /// <summary>
+        /// 상태별 목표 자세를 계산하고 SphereCast로 장애물 충돌을 해결한 카메라 위치를 갱신한다.
+        /// </summary>
         private void UpdateCameraTarget(float deltaTime)
         {
             Vector3 desiredLocal;
@@ -268,6 +304,9 @@ namespace Phyzzle.Player
             ApplyCoreLerp(deltaTime);
         }
 
+        /// <summary>
+        /// 카메라 코어를 계산된 목표 로컬 위치와 회전으로 부드럽게 보간한다.
+        /// </summary>
         private void ApplyCoreLerp(float deltaTime)
         {
             float t = Mathf.Clamp01(deltaTime / settings.positionLerpTime);
@@ -275,6 +314,9 @@ namespace Phyzzle.Player
             cameraCore.localRotation = Quaternion.Slerp(cameraCore.localRotation, coreTargetLocalRotation, t);
         }
 
+        /// <summary>
+        /// 카메라가 플레이어에 너무 가까워지면 모델 렌더러를 숨긴다.
+        /// </summary>
         private void UpdateModelVisibility()
         {
             float distance = Vector3.Distance(cameraArm.position, cameraCore.position);

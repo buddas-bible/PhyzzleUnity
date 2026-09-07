@@ -2,12 +2,18 @@ using UnityEngine;
 
 namespace Phyzzle.Player
 {
+    /// <summary>
+    /// 들기 상태에서 사용할 카메라의 로컬 위치와 회전 값을 보관한다.
+    /// </summary>
     [System.Serializable]
     public struct HoldingCameraPose
     {
         public Vector3 localPosition;
         public Vector3 localEulerAngles;
 
+        /// <summary>
+        /// 로컬 위치와 오일러 각으로 들기 카메라 자세를 생성한다.
+        /// </summary>
         public HoldingCameraPose(Vector3 position, Vector3 eulerAngles)
         {
             localPosition = position;
@@ -17,6 +23,9 @@ namespace Phyzzle.Player
         public Quaternion LocalRotation => Quaternion.Euler(localEulerAngles);
     }
 
+    /// <summary>
+    /// 플레이어 카메라 회전, 충돌 회피, 표시와 들기 상태 카메라에 사용할 튜닝 값을 보관한다.
+    /// </summary>
     [CreateAssetMenu(fileName = "PlayerCameraSettings", menuName = "Phyzzle/Player/Camera Settings")]
     public sealed class PlayerCameraSettings : ScriptableObject
     {
