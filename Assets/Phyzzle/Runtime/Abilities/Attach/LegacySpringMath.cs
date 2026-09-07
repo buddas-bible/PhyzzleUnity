@@ -2,8 +2,14 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 기존 프로젝트의 감쇠 스프링 방식으로 위치와 회전 추종 속도를 계산한다.
+    /// </summary>
     public static class LegacySpringMath
     {
+        /// <summary>
+        /// 현재 위치와 목표 위치 사이의 감쇠 스프링 선형 속도를 한 단계 갱신한다.
+        /// </summary>
         public static Vector3 UpdatePositionVelocity(
             Vector3 currentPosition,
             Vector3 currentSpringVelocity,
@@ -22,6 +28,9 @@ namespace Phyzzle.Abilities.Attach
             return determinantVelocity * determinantInverse;
         }
 
+        /// <summary>
+        /// 현재 회전과 목표 회전 사이의 감쇠 스프링 각속도를 한 단계 갱신한다.
+        /// </summary>
         public static Vector3 UpdateAngularVelocity(
             Quaternion currentRotation,
             Vector3 currentSpringVelocity,
@@ -49,6 +58,9 @@ namespace Phyzzle.Abilities.Attach
             return determinantVelocity * determinantInverse;
         }
 
+        /// <summary>
+        /// 쿼터니언을 단위 크기로 정규화하고 너무 작은 값은 항등 회전으로 대체한다.
+        /// </summary>
         private static Quaternion Normalize(Quaternion value)
         {
             float magnitude = Mathf.Sqrt(

@@ -4,14 +4,23 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// 부착 오브젝트의 등록, 연결 그래프, 물리 조인트와 선택 섬 상태를 관리한다.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class AttachmentService : MonoBehaviour
     {
+        /// <summary>
+        /// 두 부착 오브젝트 사이의 연결을 순서와 무관하게 식별하는 키다.
+        /// </summary>
         private readonly struct EdgeKey : IEquatable<EdgeKey>
         {
             private readonly EntityId first;
             private readonly EntityId second;
 
+            /// <summary>
+            /// 두 오브젝트의 엔티티 ID를 정렬해 고유한 연결 키를 생성한다.
+            /// </summary>
             public EdgeKey(AttachableObject a, AttachableObject b)
             {
                 EntityId aId = a.GetEntityId();
@@ -20,8 +29,19 @@ namespace Phyzzle.Abilities.Attach
                 second = aId < bId ? bId : aId;
             }
 
+            /// <summary>
+            /// 두 연결 키가 같은 엔티티 쌍을 나타내는지 비교한다.
+            /// </summary>
             public bool Equals(EdgeKey other) => first == other.first && second == other.second;
+
+            /// <summary>
+            /// 객체가 동일한 연결 키인지 비교한다.
+            /// </summary>
             public override bool Equals(object obj) => obj is EdgeKey other && Equals(other);
+
+            /// <summary>
+            /// 정렬된 두 엔티티 ID를 기준으로 해시 코드를 생성한다.
+            /// </summary>
             public override int GetHashCode() => HashCode.Combine(first, second);
         }
 
@@ -33,11 +53,17 @@ namespace Phyzzle.Abilities.Attach
         public AttachSettings Settings => settings;
         internal int TopologyVersion { get; private set; }
 
+        /// <summary>
+        /// 부착 처리에 사용할 설정을 구성한다.
+        /// </summary>
         public void Configure(AttachSettings attachSettings)
         {
             settings = attachSettings;
         }
 
+        /// <summary>
+        /// 부착 가능 오브젝트를 그래프에 등록하고 토폴로지 버전을 갱신한다.
+        /// </summary>
         public void Register(AttachableObject attachable)
         {
             if (attachable != null)
@@ -51,6 +77,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 오브젝트의 모든 연결을 해제한 뒤 부착 그래프에서 등록을 제거한다.
+        /// </summary>
         public void Unregister(AttachableObject attachable)
         {
             if (attachable == null)
@@ -65,11 +94,17 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 두 부착 오브젝트가 같은 연결 섬에 속하는지 확인한다.
+        /// </summary>
         public bool AreInSameIsland(AttachableObject first, AttachableObject second)
         {
             return first != null && second != null && graph.AreInSameComponent(first, second);
         }
 
+        /// <summary>
+        /// 지정한 오브젝트와 연결된 전체 부착 섬을 반환한다.
+        /// </summary>
         public IReadOnlyCollection<AttachableObject> GetIsland(AttachableObject attachable)
         {
             return attachable == null
@@ -77,6 +112,9 @@ namespace Phyzzle.Abilities.Attach
                 : graph.GetComponent(attachable);
         }
 
+        /// <summary>
+        /// 지정한 오브젝트에 직접 연결된 이웃 오브젝트를 반환한다.
+        /// </summary>
         public IReadOnlyCollection<AttachableObject> GetDirectConnections(AttachableObject attachable)
         {
             return attachable == null
@@ -84,6 +122,9 @@ namespace Phyzzle.Abilities.Attach
                 : graph.GetNeighbors(attachable);
         }
 
+        /// <summary>
+        /// 지정한 오브젝트가 속한 섬 전체에 선택 중 물리 설정을 적용한다.
+        /// </summary>
         public void SelectIsland(AttachableObject attachable)
         {
             if (settings == null || attachable == null)
@@ -97,6 +138,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 지정한 오브젝트가 속한 섬 전체의 선택 중 물리 설정을 원래 값으로 복원한다.
+        /// </summary>
         public void DeselectIsland(AttachableObject attachable)
         {
             if (attachable == null)
@@ -110,6 +154,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 현재 섬의 어느 구성원이 다른 부착 가능한 섬과 접촉 중인지 확인한다.
+        /// </summary>
         public bool IsTouchingAttachable(AttachableObject attachable)
         {
             if (attachable == null)
@@ -129,6 +176,9 @@ namespace Phyzzle.Abilities.Attach
             return false;
         }
 
+        /// <summary>
+        /// 현재 섬에서 첫 유효 접촉 후보를 찾아 실제 부착 연결을 생성한다.
+        /// </summary>
         public bool TryAttach(AttachableObject attachable)
         {
             if (attachable == null)
@@ -156,6 +206,9 @@ namespace Phyzzle.Abilities.Attach
             return false;
         }
 
+        /// <summary>
+        /// 현재 유효한 부착 연결의 FixedJoint 목록을 지정한 컬렉션에 복사한다.
+        /// </summary>
         internal void CopyConnectionJoints(List<FixedJoint> destination)
         {
             destination.Clear();
@@ -168,6 +221,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 들고 있는 섬에서 실제 부착 순서와 같은 첫 접촉 후보를 프리뷰용으로 찾는다.
+        /// </summary>
         internal bool TryGetPreviewContact(
             IReadOnlyList<AttachableObject> heldIsland,
             out AttachableObject member,
@@ -229,6 +285,9 @@ namespace Phyzzle.Abilities.Attach
             return false;
         }
 
+        /// <summary>
+        /// 두 오브젝트 사이에 FixedJoint와 그래프 간선을 생성해 하나의 부착 섬으로 연결한다.
+        /// </summary>
         public bool Attach(AttachableObject first, AttachableObject second, Vector3 worldAnchor)
         {
             if (first == null || second == null || first == second ||
@@ -255,6 +314,9 @@ namespace Phyzzle.Abilities.Attach
             return true;
         }
 
+        /// <summary>
+        /// 지정한 오브젝트의 직접 연결 조인트와 그래프 간선을 모두 제거하고 선택 상태를 복원한다.
+        /// </summary>
         public bool Detach(AttachableObject attachable)
         {
             if (attachable == null)
