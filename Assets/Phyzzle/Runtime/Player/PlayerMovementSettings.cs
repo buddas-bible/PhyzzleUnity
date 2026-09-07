@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Player
 {
+    /// <summary>
+    /// 플레이어의 지상·공중 이동, 지면 감지와 충돌 반응에 사용할 튜닝 값을 보관한다.
+    /// </summary>
     [CreateAssetMenu(fileName = "PlayerMovementSettings", menuName = "Phyzzle/Player/Movement Settings")]
     public sealed class PlayerMovementSettings : ScriptableObject
     {
