@@ -10,30 +10,51 @@ using UnityEngine.UI;
 
 namespace Phyzzle.Editor
 {
+    /// <summary>
+    /// 플레이어 HUD 계층을 에디터에서 생성하고 각 상태를 즉시 미리보기할 수 있게 구성한다.
+    /// </summary>
     public static class PlayerHudBuilder
     {
         private const string HudName = "PhyzzleHUD";
         private const string AssetRoot = "Assets/Phyzzle/UI/Legacy/";
 
+        /// <summary>
+        /// HUD를 기본 비표시 상태로 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Hidden")]
         private static void PreviewHidden() => Preview(new PlayerHudState(PlayerHudMode.Default));
 
+        /// <summary>
+        /// 부착 대상 선택 상태 HUD를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Attach Select")]
         private static void PreviewAttachSelect() =>
             Preview(new PlayerHudState(PlayerHudMode.AttachSelecting));
 
+        /// <summary>
+        /// 부착 대상을 조준한 선택 상태 HUD를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Attach Target")]
         private static void PreviewAttachTarget() =>
             Preview(new PlayerHudState(PlayerHudMode.AttachSelecting, hasTarget: true));
 
+        /// <summary>
+        /// 단일 오브젝트를 들고 있는 HUD 상태를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Hold Single")]
         private static void PreviewHoldSingle() =>
             Preview(new PlayerHudState(PlayerHudMode.AttachHolding));
 
+        /// <summary>
+        /// 여러 오브젝트로 이루어진 부착 섬을 들고 있는 HUD 상태를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Hold Island")]
         private static void PreviewHoldIsland() =>
             Preview(new PlayerHudState(PlayerHudMode.AttachHolding, islandSize: 2));
 
+        /// <summary>
+        /// 부착 섬을 회전 조작 중인 HUD 상태를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Rotate Island")]
         private static void PreviewRotateIsland() =>
             Preview(new PlayerHudState(
@@ -41,22 +62,34 @@ namespace Phyzzle.Editor
                 rotateMode: true,
                 islandSize: 2));
 
+        /// <summary>
+        /// 현재 들고 있는 대상이 다른 부착 대상과 접촉한 HUD 상태를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Can Attach")]
         private static void PreviewCanAttach() =>
             Preview(new PlayerHudState(
                 PlayerHudMode.AttachHolding,
                 touchingAttachable: true));
 
+        /// <summary>
+        /// 되감기 대상을 조준한 선택 상태 HUD를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Rewind Target")]
         private static void PreviewRewindTarget() =>
             Preview(new PlayerHudState(PlayerHudMode.RewindSelecting, hasTarget: true));
 
+        /// <summary>
+        /// 키보드 입력 기준의 부착 대상 선택 HUD를 미리본다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/HUD Preview/Keyboard Attach Target")]
         private static void PreviewKeyboardTarget() =>
             Preview(
                 new PlayerHudState(PlayerHudMode.AttachSelecting, hasTarget: true),
                 PlayerInputDeviceKind.Keyboard);
 
+        /// <summary>
+        /// 플레이어 입력과 능력 컨트롤러에 연결된 전체 HUD Canvas, 프롬프트와 Presenter를 생성한다.
+        /// </summary>
         public static PlayerHudView CreateHud(
             PlayerInputReader input,
             AttachAbilityController attach,
@@ -136,6 +169,9 @@ namespace Phyzzle.Editor
             return view;
         }
 
+        /// <summary>
+        /// 이전·현재·다음 능력을 표시하는 HUD 능력 선택기를 생성한다.
+        /// </summary>
         private static PlayerHudAbilitySelector CreateAbilitySelector(Transform parent)
         {
             RectTransform root = CreateContainer("AbilitySelector", parent);
@@ -165,6 +201,9 @@ namespace Phyzzle.Editor
                 next);
         }
 
+        /// <summary>
+        /// 지정 위치·크기·투명도로 Attach/Rewind 배지를 담는 하나의 능력 슬롯을 생성한다.
+        /// </summary>
         private static PlayerHudAbilitySlot CreateAbilitySlot(
             Transform parent,
             string name,
@@ -196,6 +235,9 @@ namespace Phyzzle.Editor
             return new PlayerHudAbilitySlot(root.gameObject, attach, rewind);
         }
 
+        /// <summary>
+        /// 능력 글리프와 이름 텍스트를 포함한 하나의 능력 배지를 생성한다.
+        /// </summary>
         private static GameObject CreateAbilityBadge(
             Transform parent,
             string name,
@@ -223,6 +265,9 @@ namespace Phyzzle.Editor
             return badge;
         }
 
+        /// <summary>
+        /// 능력 배지 내부에 지정한 스타일의 가운데 정렬 텍스트를 생성한다.
+        /// </summary>
         private static void CreateAbilityText(
             Transform parent,
             string name,
@@ -259,6 +304,9 @@ namespace Phyzzle.Editor
             outline.effectDistance = new Vector2(2f, -2f);
         }
 
+        /// <summary>
+        /// 레거시 이미지 자산을 이용해 게임패드용 능력 조작 프롬프트 세트를 생성한다.
+        /// </summary>
         private static PlayerHudPromptSet CreateGamepadPrompts(Transform parent)
         {
             Transform root = CreateContainer("Gamepad", parent);
@@ -303,6 +351,9 @@ namespace Phyzzle.Editor
                 stick);
         }
 
+        /// <summary>
+        /// 텍스트 라벨을 이용해 키보드용 능력 조작 프롬프트 세트를 생성한다.
+        /// </summary>
         private static PlayerHudPromptSet CreateKeyboardPrompts(Transform parent)
         {
             Transform root = CreateContainer("Keyboard", parent);
@@ -349,6 +400,9 @@ namespace Phyzzle.Editor
                 stick);
         }
 
+        /// <summary>
+        /// 키보드 프롬프트 한 그룹과 외곽선 텍스트 라벨을 생성한다.
+        /// </summary>
         private static GameObject KeyboardGroup(
             Transform parent,
             string name,
@@ -387,6 +441,9 @@ namespace Phyzzle.Editor
             return group;
         }
 
+        /// <summary>
+        /// 화면 하단 기준으로 레거시 프롬프트 이미지를 생성한다.
+        /// </summary>
         private static void CreateBottomImage(
             Transform parent,
             string name,
@@ -405,6 +462,9 @@ namespace Phyzzle.Editor
                 new Vector2(0.5f, 0f));
         }
 
+        /// <summary>
+        /// 지정 Sprite 자산과 RectTransform 배치값을 사용하는 HUD Image 오브젝트를 생성한다.
+        /// </summary>
         private static GameObject CreateImage(
             string name,
             Transform parent,
@@ -433,6 +493,9 @@ namespace Phyzzle.Editor
             return imageObject;
         }
 
+        /// <summary>
+        /// 부모 전체 영역을 채우는 RectTransform 컨테이너를 생성한다.
+        /// </summary>
         private static RectTransform CreateContainer(string name, Transform parent)
         {
             GameObject container = new(name, typeof(RectTransform));
@@ -445,6 +508,9 @@ namespace Phyzzle.Editor
             return rect;
         }
 
+        /// <summary>
+        /// 씬의 HUD View에 지정 상태와 입력 장치 미리보기를 적용하고 씬을 수정 상태로 표시한다.
+        /// </summary>
         private static void Preview(
             PlayerHudState state,
             PlayerInputDeviceKind device = PlayerInputDeviceKind.Gamepad)
