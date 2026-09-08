@@ -7,8 +7,14 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Editor
 {
+    /// <summary>
+    /// 되감기 시각 효과에 필요한 마스크, 합성, 프리뷰 재질을 묶어 전달한다.
+    /// </summary>
     public readonly struct RewindVisualAssets
     {
+        /// <summary>
+        /// 되감기 시각 효과 재질 묶음을 생성한다.
+        /// </summary>
         internal RewindVisualAssets(Material mask, Material composite, Material preview)
         {
             Mask = mask;
@@ -21,11 +27,17 @@ namespace Phyzzle.Editor
         public Material Preview { get; }
     }
 
+    /// <summary>
+    /// 되감기 VFX 재질 자산과 URP Renderer Feature를 생성·검증한다.
+    /// </summary>
     public static class RewindVisualAssetBuilder
     {
         private const string DefaultMaterialsFolder = "Assets/Phyzzle/Settings";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
 
+        /// <summary>
+        /// 되감기 VFX에 필요한 모든 재질을 지정 폴더에 생성하거나 기존 자산을 검증한다.
+        /// </summary>
         public static RewindVisualAssets EnsureMaterials(
             string materialsFolder = DefaultMaterialsFolder)
         {
@@ -42,6 +54,9 @@ namespace Phyzzle.Editor
             return new RewindVisualAssets(mask, composite, preview);
         }
 
+        /// <summary>
+        /// PC RendererData에 되감기 Renderer Feature가 존재하도록 구성한다.
+        /// </summary>
         public static RewindRenderFeature EnsurePcRendererFeature(RewindVisualAssets assets)
         {
             UniversalRendererData rendererData =
@@ -55,6 +70,9 @@ namespace Phyzzle.Editor
             return EnsureRendererFeature(rendererData, assets.Mask, assets.Composite);
         }
 
+        /// <summary>
+        /// 지정 RendererData의 되감기 피처를 하나로 유지하고 재질과 Feature Map을 동기화한다.
+        /// </summary>
         public static RewindRenderFeature EnsureRendererFeature(
             UniversalRendererData rendererData,
             Material maskMaterial,
@@ -113,6 +131,9 @@ namespace Phyzzle.Editor
             return feature;
         }
 
+        /// <summary>
+        /// Renderer Feature 목록과 직렬화된 local file ID 맵의 길이와 순서를 일치시킨다.
+        /// </summary>
         private static bool SynchronizeRendererFeatureMap(
             UniversalRendererData rendererData)
         {
@@ -150,6 +171,9 @@ namespace Phyzzle.Editor
             return changed;
         }
 
+        /// <summary>
+        /// 지정 셰이더를 사용하는 Material 자산을 생성하거나 셰이더 참조를 교정한다.
+        /// </summary>
         private static Material EnsureMaterial(string path, string shaderName)
         {
             Shader shader = Shader.Find(shaderName);
@@ -184,6 +208,9 @@ namespace Phyzzle.Editor
             return AssetDatabase.LoadAssetAtPath<Material>(path);
         }
 
+        /// <summary>
+        /// 중첩 경로를 순회하며 존재하지 않는 AssetDatabase 폴더를 순서대로 생성한다.
+        /// </summary>
         private static void EnsureFolder(string folder)
         {
             string[] parts = folder.Split('/');

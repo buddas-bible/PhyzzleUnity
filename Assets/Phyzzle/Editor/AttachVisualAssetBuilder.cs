@@ -8,8 +8,14 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Editor
 {
+    /// <summary>
+    /// 부착 시각 효과에 필요한 마스크, 합성, 투영, 테더와 접촉 프리뷰 재질을 묶어 전달한다.
+    /// </summary>
     public readonly struct AttachVisualAssets
     {
+        /// <summary>
+        /// 부착 시각 효과 재질 묶음을 생성한다.
+        /// </summary>
         internal AttachVisualAssets(Material mask, Material composite, Material projection, Material tether, Material contactPreview)
         {
             Mask = mask;
@@ -26,11 +32,17 @@ namespace Phyzzle.Editor
         public Material ContactPreview { get; }
     }
 
+    /// <summary>
+    /// 부착 VFX 재질 자산과 URP Renderer Feature를 생성·검증하고 올바른 순서로 구성한다.
+    /// </summary>
     public static class AttachVisualAssetBuilder
     {
         private const string DefaultMaterialsFolder = "Assets/Phyzzle/Settings";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
 
+        /// <summary>
+        /// 부착 VFX에 필요한 모든 재질을 지정 폴더에 생성하거나 기존 자산을 검증한다.
+        /// </summary>
         public static AttachVisualAssets EnsureMaterials(
             string materialsFolder = DefaultMaterialsFolder)
         {
@@ -53,6 +65,9 @@ namespace Phyzzle.Editor
             return new AttachVisualAssets(mask, composite, projection, tether, contactPreview);
         }
 
+        /// <summary>
+        /// PC RendererData에 부착 Renderer Feature가 존재하도록 구성한다.
+        /// </summary>
         public static AttachRenderFeature EnsurePcRendererFeature(AttachVisualAssets assets)
         {
             UniversalRendererData rendererData =
@@ -66,6 +81,9 @@ namespace Phyzzle.Editor
             return EnsureRendererFeature(rendererData, assets.Mask, assets.Composite);
         }
 
+        /// <summary>
+        /// 지정 RendererData의 부착 피처를 하나로 유지하고 재질·순서·Feature Map을 동기화한다.
+        /// </summary>
         public static AttachRenderFeature EnsureRendererFeature(
             UniversalRendererData rendererData,
             Material maskMaterial,
@@ -127,6 +145,9 @@ namespace Phyzzle.Editor
             return feature;
         }
 
+        /// <summary>
+        /// 기존 Renderer Feature가 모두 RendererData의 영속 서브자산인지 검증한다.
+        /// </summary>
         private static void ValidatePersistentRendererFeatures(
             UniversalRendererData rendererData)
         {
@@ -144,6 +165,9 @@ namespace Phyzzle.Editor
             }
         }
 
+        /// <summary>
+        /// 부착 피처가 모든 되감기 피처 다음 위치에 오도록 목록 순서를 조정한다.
+        /// </summary>
         private static bool MoveAfterLastRewindFeature(
             UniversalRendererData rendererData,
             AttachRenderFeature feature)
@@ -167,6 +191,9 @@ namespace Phyzzle.Editor
             return true;
         }
 
+        /// <summary>
+        /// Renderer Feature 목록과 직렬화된 local file ID 맵의 길이와 순서를 일치시킨다.
+        /// </summary>
         private static bool SynchronizeRendererFeatureMap(
             UniversalRendererData rendererData)
         {
@@ -204,6 +231,9 @@ namespace Phyzzle.Editor
             return changed;
         }
 
+        /// <summary>
+        /// 지정 셰이더를 사용하는 Material 자산을 생성하거나 셰이더 참조를 교정한다.
+        /// </summary>
         private static Material EnsureMaterial(string path, string shaderName)
         {
             Shader shader = Shader.Find(shaderName);
@@ -238,6 +268,9 @@ namespace Phyzzle.Editor
             return AssetDatabase.LoadAssetAtPath<Material>(path);
         }
 
+        /// <summary>
+        /// 중첩 경로를 순회하며 존재하지 않는 AssetDatabase 폴더를 순서대로 생성한다.
+        /// </summary>
         private static void EnsureFolder(string folder)
         {
             string[] parts = folder.Split('/');
