@@ -1,3 +1,4 @@
+# One-time documentation workflow for docs/source-comments.
 name: Annotate test comments
 
 on:
