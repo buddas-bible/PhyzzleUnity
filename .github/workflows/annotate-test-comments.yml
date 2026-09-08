@@ -7,6 +7,7 @@ on:
       - docs/source-comments
     paths:
       - .github/workflows/annotate-test-comments.yml
+      - scripts/annotate_test_comments.py
 
 permissions:
   contents: write
