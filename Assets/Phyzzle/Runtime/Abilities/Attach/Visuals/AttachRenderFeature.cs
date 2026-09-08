@@ -8,10 +8,19 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Abilities.Attach
 {
+    /// <summary>
+    /// URP RenderGraph에서 부착 대상 마스크를 만들고 화면 합성 효과를 적용하는 Renderer Feature다.
+    /// </summary>
     public sealed class AttachRenderFeature : ScriptableRendererFeature
     {
+        /// <summary>
+        /// 렌더링 레이어별 부착 마스크 생성과 후처리 합성을 기록하는 URP 렌더 패스다.
+        /// </summary>
         private sealed class AttachRenderPass : ScriptableRenderPass
         {
+            /// <summary>
+            /// 마스크 패스에서 사용할 Eligible, Focused, Held RendererList 핸들을 보관한다.
+            /// </summary>
             private sealed class MaskPassData
             {
                 internal RendererListHandle Eligible;
@@ -34,6 +43,9 @@ namespace Phyzzle.Abilities.Attach
 
             internal bool HasIntermediateRequirement => requiresIntermediateTexture;
 
+            /// <summary>
+            /// 마스크·합성 재질을 설정하고 중간 컬러 텍스처 사용을 요구한다.
+            /// </summary>
             internal void Setup(Material attachMaskMaterial, Material attachCompositeMaterial)
             {
                 maskMaterial = attachMaskMaterial;
@@ -41,6 +53,9 @@ namespace Phyzzle.Abilities.Attach
                 requiresIntermediateTexture = true;
             }
 
+            /// <summary>
+            /// 부착 마스크 렌더 패스와 화면 합성 블릿 패스를 RenderGraph에 기록한다.
+            /// </summary>
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
                 UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
@@ -94,6 +109,9 @@ namespace Phyzzle.Abilities.Attach
                 resourceData.cameraColor = destination;
             }
 
+            /// <summary>
+            /// 지정한 렌더링 레이어를 마스크 재질의 특정 패스로 그릴 RendererList를 생성한다.
+            /// </summary>
             private RendererListHandle CreateRendererList(
                 RenderGraph renderGraph,
                 ContextContainer frameData,
@@ -126,6 +144,9 @@ namespace Phyzzle.Abilities.Attach
         internal bool RequiresIntermediateTexture => pass?.HasIntermediateRequirement == true;
         internal GraphicsFormat MaskFormat => AttachRenderPass.RequiredMaskFormat;
 
+        /// <summary>
+        /// Renderer Feature에서 사용할 마스크와 합성 재질을 구성한다.
+        /// </summary>
         public void Configure(Material attachMaskMaterial, Material attachCompositeMaterial)
         {
             maskMaterial = attachMaskMaterial;
@@ -133,6 +154,9 @@ namespace Phyzzle.Abilities.Attach
             pass?.Setup(maskMaterial, compositeMaterial);
         }
 
+        /// <summary>
+        /// 후처리 이후 실행될 부착 렌더 패스를 생성하고 재질이 있으면 설정한다.
+        /// </summary>
         public override void Create()
         {
             pass = new AttachRenderPass
@@ -145,6 +169,9 @@ namespace Phyzzle.Abilities.Attach
             }
         }
 
+        /// <summary>
+        /// 현재 카메라와 시각 블렌드 조건이 유효할 때 부착 렌더 패스를 큐에 추가한다.
+        /// </summary>
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             bool materialsValid = maskMaterial != null && compositeMaterial != null;
@@ -165,6 +192,9 @@ namespace Phyzzle.Abilities.Attach
             renderer.EnqueuePass(pass);
         }
 
+        /// <summary>
+        /// 게임 Base 카메라에서 유효한 재질과 시각 블렌드가 있을 때만 패스를 실행하도록 판정한다.
+        /// </summary>
         internal static bool ShouldEnqueue(
             CameraType cameraType,
             CameraRenderType renderType,
@@ -175,6 +205,9 @@ namespace Phyzzle.Abilities.Attach
                    cameraType == CameraType.Game && renderType == CameraRenderType.Base;
         }
 
+        /// <summary>
+        /// RendererData에 활성화되고 완전히 구성된 AttachRenderFeature가 있는지 확인한다.
+        /// </summary>
         internal static bool SupportsRendererData(ScriptableRendererData rendererData)
         {
             if (rendererData == null)
