@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachHoldConstraintsTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachHoldConstraintsTests
     {
+        /// <summary>
+        /// <c>ClampTargetForBounds_PushesMinimumZThenAppliesCppScalarLimits</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ClampTargetForBounds_PushesMinimumZThenAppliesCppScalarLimits()
         {
@@ -22,6 +28,9 @@ namespace Phyzzle.Tests
             Assert.That(result.z, Is.EqualTo(2.5f).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>TryComputeIslandLocalBounds_IncludesAttachedMember</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TryComputeIslandLocalBounds_IncludesAttachedMember()
         {
@@ -69,6 +78,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>LimitOrbit_TargetWithinOffset_ReturnsDesiredRotation</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LimitOrbit_TargetWithinOffset_ReturnsDesiredRotation()
         {
@@ -81,6 +93,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(result, desired), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>LimitOrbit_TargetBeyondOffset_UsesCppOffsetDirection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LimitOrbit_TargetBeyondOffset_UsesCppOffsetDirection()
         {
@@ -99,6 +114,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(result, expected), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>LimitOrbit_ZeroDirection_ReturnsFiniteCurrentRotation</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LimitOrbit_ZeroDirection_ReturnsFiniteCurrentRotation()
         {
@@ -113,6 +131,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(result, current), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>LimitLift_TargetBeyondOffset_ClampsWorldHeightFromObject</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LimitLift_TargetBeyondOffset_ClampsWorldHeightFromObject()
         {
@@ -128,6 +149,9 @@ namespace Phyzzle.Tests
             Assert.That(result.z, Is.EqualTo(5f).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>LimitLift_TargetWithinOffset_PreservesCandidate</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LimitLift_TargetWithinOffset_PreservesCandidate()
         {

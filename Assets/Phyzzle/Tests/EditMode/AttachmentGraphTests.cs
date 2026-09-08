@@ -3,8 +3,14 @@ using Phyzzle.Abilities.Attach;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachmentGraphTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachmentGraphTests
     {
+        /// <summary>
+        /// <c>Connect_MergesComponents_AndDisconnectSplitsThem</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Connect_MergesComponents_AndDisconnectSplitsThem()
         {
@@ -23,6 +29,9 @@ namespace Phyzzle.Tests
             Assert.That(graph.AreInSameComponent("A", "D"), Is.False);
         }
 
+        /// <summary>
+        /// <c>Remove_DisconnectsNodeFromEveryNeighbor</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Remove_DisconnectsNodeFromEveryNeighbor()
         {

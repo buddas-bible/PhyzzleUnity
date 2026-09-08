@@ -12,14 +12,23 @@ using UnityEngine.UI;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerHudBuilderTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerHudBuilderTests
     {
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         }
 
+        /// <summary>
+        /// <c>CreateHud_BuildsResponsiveCanvasAndPresenter</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CreateHud_BuildsResponsiveCanvasAndPresenter()
         {
@@ -92,6 +101,9 @@ namespace Phyzzle.Tests
             Assert.That(controllerField.GetValue(presenter), Is.SameAs(abilities));
         }
 
+        /// <summary>
+        /// <c>CreateHud_CalledTwice_ReplacesExistingHud</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CreateHud_CalledTwice_ReplacesExistingHud()
         {
@@ -110,6 +122,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(1));
         }
 
+        /// <summary>
+        /// <c>SetPreview_ShowsRequestedStateOutsidePlayMode</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SetPreview_ShowsRequestedStateOutsidePlayMode()
         {

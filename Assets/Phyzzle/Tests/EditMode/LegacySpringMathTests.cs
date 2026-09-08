@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>LegacySpringMathTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class LegacySpringMathTests
     {
+        /// <summary>
+        /// <c>PositionSpring_AcceleratesTowardTarget</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void PositionSpring_AcceleratesTowardTarget()
         {
@@ -22,6 +28,9 @@ namespace Phyzzle.Tests
             Assert.That(result.y, Is.EqualTo(0f));
         }
 
+        /// <summary>
+        /// <c>QuaternionSpring_UsesShortestTargetDirection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void QuaternionSpring_UsesShortestTargetDirection()
         {

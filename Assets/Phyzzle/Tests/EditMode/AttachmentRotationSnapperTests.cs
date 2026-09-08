@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachmentRotationSnapperTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachmentRotationSnapperTests
     {
+        /// <summary>
+        /// <c>Snap_SelectsNearestLegacyCandidate</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Snap_SelectsNearestLegacyCandidate()
         {

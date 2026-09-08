@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerCameraMathTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerCameraMathTests
     {
+        /// <summary>
+        /// <c>EvaluateLocalZ_MatchesOriginalCameraEndpoints</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(0f, -4f)]
         [TestCase(80f, -10f)]
         [TestCase(-70f, -2f)]
@@ -16,6 +22,9 @@ namespace Phyzzle.Tests
             Assert.That(result, Is.EqualTo(expected).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>EvaluateLocalZ_ClampsPitchOutsideOriginalLimits</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EvaluateLocalZ_ClampsPitchOutsideOriginalLimits()
         {
@@ -26,6 +35,9 @@ namespace Phyzzle.Tests
             Assert.That(below, Is.EqualTo(-2f).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>EvaluateHoldingPose_UsesAuthoredDistanceRanges</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(5f, 2.8f, -4.2f, 31f)]
         [TestCase(10f, 2.6333334f, -5.133333f, 31f)]
         [TestCase(12.5f, 2.55f, -5.6f, 25.75f)]
@@ -58,6 +70,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>EvaluateHoldingPose_ReachesAuthoredHeightEndpoints</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(10f, 7.9f, -11.5f, 20f)]
         [TestCase(-7f, 4f, -1f, 70f)]
         public void EvaluateHoldingPose_ReachesAuthoredHeightEndpoints(

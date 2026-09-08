@@ -5,11 +5,17 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindPreviewSamplerTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindPreviewSamplerTests
     {
         private readonly List<RewindPoseSample> path = new();
         private readonly List<RewindPoseSample> ghosts = new();
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -17,6 +23,9 @@ namespace Phyzzle.Tests
             ghosts.Clear();
         }
 
+        /// <summary>
+        /// <c>Build_FewerThanTwoSamplesClearsBothOutputs</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(0)]
         [TestCase(1)]
         public void Build_FewerThanTwoSamplesClearsBothOutputs(int sourceCount)
@@ -31,6 +40,9 @@ namespace Phyzzle.Tests
             Assert.That(ghosts, Is.Empty);
         }
 
+        /// <summary>
+        /// <c>Build_PathCapPreservesNewestAndOldestSamples</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Build_PathCapPreservesNewestAndOldestSamples()
         {
@@ -43,6 +55,9 @@ namespace Phyzzle.Tests
             Assert.That(path[255].Position, Is.EqualTo(Vector3.right * 1000f));
         }
 
+        /// <summary>
+        /// <c>Build_DefaultGhostCountIncludesBothEndpoints</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Build_DefaultGhostCountIncludesBothEndpoints()
         {
@@ -55,6 +70,9 @@ namespace Phyzzle.Tests
             Assert.That(ghosts[7].Position, Is.EqualTo(Vector3.right * 19f));
         }
 
+        /// <summary>
+        /// <c>Build_GhostCountClampsToTwoTwelveAndAvailableSamples</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(20, 1, 2)]
         [TestCase(20, 99, 12)]
         [TestCase(5, 8, 5)]
@@ -73,6 +91,9 @@ namespace Phyzzle.Tests
             Assert.That(ghosts, Has.Count.EqualTo(expectedCount));
         }
 
+        /// <summary>
+        /// <c>Build_UsesRoundedUniformIndicesWithoutMutatingSource</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Build_UsesRoundedUniformIndicesWithoutMutatingSource()
         {
@@ -89,6 +110,9 @@ namespace Phyzzle.Tests
             Assert.That(source, Is.EqualTo(original));
         }
 
+        /// <summary>
+        /// <c>Build_EqualTimeGhostsCreateWiderGapAcrossFastMotion</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Build_EqualTimeGhostsCreateWiderGapAcrossFastMotion()
         {
@@ -115,6 +139,9 @@ namespace Phyzzle.Tests
                 Is.GreaterThan(Vector3.Distance(ghosts[0].Position, ghosts[1].Position)));
         }
 
+        /// <summary>
+        /// <c>Build_PathLimitBelowTwoStillKeepsBothEndpoints</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Build_PathLimitBelowTwoStillKeepsBothEndpoints()
         {
@@ -125,6 +152,9 @@ namespace Phyzzle.Tests
             Assert.That(path[1].Position, Is.EqualTo(Vector3.right * 4f));
         }
 
+        /// <summary>
+        /// <c>SequentialSamples</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static List<RewindPoseSample> SequentialSamples(int count)
         {
             List<RewindPoseSample> samples = new(count);
@@ -136,6 +166,9 @@ namespace Phyzzle.Tests
             return samples;
         }
 
+        /// <summary>
+        /// <c>SampleAt</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static RewindPoseSample SampleAt(float x) =>
             new((ulong)Mathf.Max(0, Mathf.RoundToInt(x)), Vector3.right * x, Quaternion.Euler(0f, x, 0f));
     }

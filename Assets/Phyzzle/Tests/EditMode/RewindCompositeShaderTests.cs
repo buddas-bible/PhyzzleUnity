@@ -4,6 +4,9 @@ using UnityEngine.Rendering;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindCompositeShaderTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindCompositeShaderTests
     {
         private const int Size = 9;
@@ -15,6 +18,9 @@ namespace Phyzzle.Tests
 
         private Material material;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -23,6 +29,9 @@ namespace Phyzzle.Tests
             material = new Material(shader);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -37,6 +46,9 @@ namespace Phyzzle.Tests
                 Texture2D.blackTexture);
         }
 
+        /// <summary>
+        /// <c>Composite_ZeroBlendPreservesSourceRgba</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Composite_ZeroBlendPreservesSourceRgba()
         {
@@ -49,6 +61,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(output);
         }
 
+        /// <summary>
+        /// <c>Composite_UnmaskedWorldUsesApprovedRec709SaturationAndPreservesAlpha</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Composite_UnmaskedWorldUsesApprovedRec709SaturationAndPreservesAlpha()
         {
@@ -65,6 +80,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(output);
         }
 
+        /// <summary>
+        /// <c>Composite_PlayerPreserveChannelWinsOverEligibleAndActiveChannels</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Composite_PlayerPreserveChannelWinsOverEligibleAndActiveChannels()
         {
@@ -77,6 +95,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(output);
         }
 
+        /// <summary>
+        /// <c>Composite_ActiveTargetIsStrongerAndBrighterThanEligibleTarget</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Composite_ActiveTargetIsStrongerAndBrighterThanEligibleTarget()
         {
@@ -99,6 +120,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(activeOutput);
         }
 
+        /// <summary>
+        /// <c>Composite_ActiveOutlineReachesFartherThanEligibleOutline</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Composite_ActiveOutlineReachesFartherThanEligibleOutline()
         {
@@ -128,6 +152,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(activeOutput);
         }
 
+        /// <summary>
+        /// <c>Render</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private Texture2D Render(Texture2D mask, float blend)
         {
             Texture2D source = SolidTexture(SourceColor);
@@ -177,6 +204,9 @@ namespace Phyzzle.Tests
             return output;
         }
 
+        /// <summary>
+        /// <c>SolidTexture</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Texture2D SolidTexture(Color color)
         {
             Texture2D texture = new(Size, Size, TextureFormat.RGBA32, false, true)
@@ -195,11 +225,17 @@ namespace Phyzzle.Tests
             return texture;
         }
 
+        /// <summary>
+        /// <c>ColorDistance</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static float ColorDistance(Color first, Color second) =>
             Vector3.Distance(
                 new Vector3(first.r, first.g, first.b),
                 new Vector3(second.r, second.g, second.b));
 
+        /// <summary>
+        /// <c>AssertColor</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertColor(Color actual, Color expected, float tolerance)
         {
             Assert.That(actual.r, Is.EqualTo(expected.r).Within(tolerance));

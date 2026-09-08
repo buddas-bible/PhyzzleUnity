@@ -8,6 +8,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerHudViewPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerHudViewPlayModeTests
     {
         private GameObject host;
@@ -22,6 +25,9 @@ namespace Phyzzle.Tests
         private PlayerHudAbilitySlot currentAbility;
         private PlayerHudAbilitySlot nextAbility;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -42,12 +48,18 @@ namespace Phyzzle.Tests
                 abilitySelector);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
             Object.DestroyImmediate(host);
         }
 
+        /// <summary>
+        /// <c>SelectingTarget_ActivatesCrosshairsAndGamepadPrompts</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator SelectingTarget_ActivatesCrosshairsAndGamepadPrompts()
         {
@@ -64,6 +76,9 @@ namespace Phyzzle.Tests
             Assert.That(keyboard.Root.activeSelf, Is.False);
         }
 
+        /// <summary>
+        /// <c>KeyboardSwitch_ChangesPromptRootWithoutChangingCrosshair</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator KeyboardSwitch_ChangesPromptRootWithoutChangingCrosshair()
         {
@@ -78,6 +93,9 @@ namespace Phyzzle.Tests
             Assert.That(keyboard.AttachDefault.activeSelf, Is.True);
         }
 
+        /// <summary>
+        /// <c>HoldingIslandRotation_ActivatesRotationPromptAndArrow</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator HoldingIslandRotation_ActivatesRotationPromptAndArrow()
         {
@@ -95,6 +113,9 @@ namespace Phyzzle.Tests
             Assert.That(gamepad.AttachHoldIsland.activeSelf, Is.False);
         }
 
+        /// <summary>
+        /// <c>Default_HidesContextVisualsAndKeepsSelectedAbility</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Default_HidesContextVisualsAndKeepsSelectedAbility()
         {
@@ -120,6 +141,9 @@ namespace Phyzzle.Tests
             Assert.That(nextAbility.Root.activeSelf, Is.False);
         }
 
+        /// <summary>
+        /// <c>ChangedAbility_ShowsTheOtherAbilityOnBothDimSideSlots</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator ChangedAbility_ShowsTheOtherAbilityOnBothDimSideSlots()
         {
@@ -141,6 +165,9 @@ namespace Phyzzle.Tests
             Assert.That(nextAbility.Root.GetComponent<CanvasGroup>().alpha, Is.LessThan(1f));
         }
 
+        /// <summary>
+        /// <c>Presenter_SelectionChangeUsesUnscaledTimeoutThenHidesNeighbors</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Presenter_SelectionChangeUsesUnscaledTimeoutThenHidesNeighbors()
         {
@@ -172,6 +199,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(player);
         }
 
+        /// <summary>
+        /// <c>Presenter_ReenableInitializesCurrentAbilityWithoutFalseCarousel</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Presenter_ReenableInitializesCurrentAbilityWithoutFalseCarousel()
         {
@@ -192,6 +222,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(player);
         }
 
+        /// <summary>
+        /// <c>CreatePromptSet</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private PlayerHudPromptSet CreatePromptSet(string name)
         {
             return new PlayerHudPromptSet(
@@ -205,6 +238,9 @@ namespace Phyzzle.Tests
                 Child(name + " Stick"));
         }
 
+        /// <summary>
+        /// <c>CreateAbilitySelector</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private PlayerHudAbilitySelector CreateAbilitySelector()
         {
             GameObject root = Child("Ability Selector");
@@ -218,6 +254,9 @@ namespace Phyzzle.Tests
                 nextAbility);
         }
 
+        /// <summary>
+        /// <c>CreateAbilitySlot</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private PlayerHudAbilitySlot CreateAbilitySlot(
             Transform parent,
             string name,
@@ -233,6 +272,9 @@ namespace Phyzzle.Tests
             return new PlayerHudAbilitySlot(root, attach, rewind);
         }
 
+        /// <summary>
+        /// <c>Child</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private GameObject Child(string name)
         {
             GameObject child = new(name);

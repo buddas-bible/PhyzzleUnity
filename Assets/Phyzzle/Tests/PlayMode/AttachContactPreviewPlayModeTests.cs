@@ -8,11 +8,17 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachContactPreviewPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachContactPreviewPlayModeTests
     {
         private Scene scene;
         private AttachmentService service;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -23,12 +29,18 @@ namespace Phyzzle.Tests
             service = serviceObject.AddComponent<AttachmentService>();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
             yield return SceneManager.UnloadSceneAsync(scene);
         }
 
+        /// <summary>
+        /// <c>ContactOnNonRootIslandMember_PreviewsTheActualJointAnchorWithoutMutatingBodies</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ContactOnNonRootIslandMember_PreviewsTheActualJointAnchorWithoutMutatingBodies()
         {
@@ -67,6 +79,9 @@ namespace Phyzzle.Tests
             AssertNoContact(new List<AttachableObject>(service.GetIsland(root)));
         }
 
+        /// <summary>
+        /// <c>ContactAlreadyJoinedIntoHeldIsland_DoesNotPreviewASecondAttachment</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ContactAlreadyJoinedIntoHeldIsland_DoesNotPreviewASecondAttachment()
         {
@@ -81,6 +96,9 @@ namespace Phyzzle.Tests
             AssertNoContact(new List<AttachableObject>(service.GetIsland(held)));
         }
 
+        /// <summary>
+        /// <c>DisabledFirstCandidate_SuppressesPreviewUntilTheActionCanChooseNextMember</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisabledFirstCandidate_SuppressesPreviewUntilTheActionCanChooseNextMember()
         {
@@ -109,6 +127,9 @@ namespace Phyzzle.Tests
             Assert.That(other, Is.SameAs(secondTarget));
         }
 
+        /// <summary>
+        /// <c>InactiveTarget_SuppressesTheStillCachedContact</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void InactiveTarget_SuppressesTheStillCachedContact()
         {
@@ -123,6 +144,9 @@ namespace Phyzzle.Tests
             AssertNoContact(island);
         }
 
+        /// <summary>
+        /// <c>DestroyedTarget_SuppressesTheStillCachedContact</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator DestroyedTarget_SuppressesTheStillCachedContact()
         {
@@ -138,6 +162,9 @@ namespace Phyzzle.Tests
             AssertNoContact(island);
         }
 
+        /// <summary>
+        /// <c>EmptyOrUncontactedIsland_ReturnsNoPreviewAndClearsOutputs</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EmptyOrUncontactedIsland_ReturnsNoPreviewAndClearsOutputs()
         {
@@ -150,6 +177,9 @@ namespace Phyzzle.Tests
             AssertNoContact(new List<AttachableObject> { null, held });
         }
 
+        /// <summary>
+        /// <c>AssertNoContact</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void AssertNoContact(IReadOnlyList<AttachableObject> island)
         {
             Assert.That(service.TryGetPreviewContact(island, out AttachableObject member,
@@ -159,6 +189,9 @@ namespace Phyzzle.Tests
             Assert.That(anchor, Is.EqualTo(Vector3.zero));
         }
 
+        /// <summary>
+        /// <c>CreateAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateAttachable(string name, float x)
         {
             GameObject target = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -173,6 +206,9 @@ namespace Phyzzle.Tests
             return attachable;
         }
 
+        /// <summary>
+        /// <c>SimulateContacts</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SimulateContacts()
         {
             Physics.SyncTransforms();

@@ -6,6 +6,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachmentServicePlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachmentServicePlayModeTests
     {
         private GameObject serviceObject;
@@ -16,6 +19,9 @@ namespace Phyzzle.Tests
         private AttachableObject first;
         private AttachableObject second;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -31,6 +37,9 @@ namespace Phyzzle.Tests
             second = CreateAttachable("Second", Vector3.right, 5f, out secondObject);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -41,6 +50,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>AttachAndDetach_CreateJointAndSplitIsland</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator AttachAndDetach_CreateJointAndSplitIsland()
         {
@@ -56,6 +68,9 @@ namespace Phyzzle.Tests
             Assert.That(first.GetComponent<FixedJoint>(), Is.Null);
         }
 
+        /// <summary>
+        /// <c>SelectAndDeselectIsland_RestoresRigidBodyProperties</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator SelectAndDeselectIsland_RestoresRigidBodyProperties()
         {
@@ -78,6 +93,9 @@ namespace Phyzzle.Tests
             Assert.That(secondBody.useGravity, Is.True);
         }
 
+        /// <summary>
+        /// <c>Attach_ScaledObjects_RemainAtContactPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Attach_ScaledObjects_RemainAtContactPose()
         {
@@ -101,6 +119,9 @@ namespace Phyzzle.Tests
             Assert.That(finalSeparation, Is.EqualTo(initialSeparation).Within(0.01f));
         }
 
+        /// <summary>
+        /// <c>CreateAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateAttachable(
             string name,
             Vector3 position,

@@ -6,8 +6,14 @@ using Phyzzle.UI;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerHudPresenterStateTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerHudPresenterStateTests
     {
+        /// <summary>
+        /// <c>AttachSelecting_MapsTargetState</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void AttachSelecting_MapsTargetState()
         {
@@ -24,6 +30,9 @@ namespace Phyzzle.Tests
             Assert.That(state.HasTarget, Is.True);
         }
 
+        /// <summary>
+        /// <c>AttachHolding_MapsHoldDetails</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void AttachHolding_MapsHoldDetails()
         {
@@ -42,6 +51,9 @@ namespace Phyzzle.Tests
             Assert.That(state.IslandSize, Is.EqualTo(3));
         }
 
+        /// <summary>
+        /// <c>RewindSelecting_MapsRewindTarget</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void RewindSelecting_MapsRewindTarget()
         {
@@ -58,6 +70,9 @@ namespace Phyzzle.Tests
             Assert.That(state.HasTarget, Is.True);
         }
 
+        /// <summary>
+        /// <c>DefaultControllers_MapHiddenHud</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DefaultControllers_MapHiddenHud()
         {
@@ -73,6 +88,9 @@ namespace Phyzzle.Tests
             Assert.That(state.Mode, Is.EqualTo(PlayerHudMode.Default));
         }
 
+        /// <summary>
+        /// <c>AbilitySelection_IsPassedToHudState</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void AbilitySelection_IsPassedToHudState()
         {

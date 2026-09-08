@@ -7,6 +7,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachmentJointSnapshotPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachmentJointSnapshotPlayModeTests
     {
         private readonly List<GameObject> objects = new();
@@ -16,6 +19,9 @@ namespace Phyzzle.Tests
         private AttachableObject second;
         private AttachableObject third;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -28,6 +34,9 @@ namespace Phyzzle.Tests
             third = CreateAttachable("Third", Vector3.right * 2f);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -41,6 +50,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>CopyConnectionJoints_ClearsDestinationAndCopiesOnlyServiceJointsOnce</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyConnectionJoints_ClearsDestinationAndCopiesOnlyServiceJointsOnce()
         {
@@ -59,6 +71,9 @@ namespace Phyzzle.Tests
             CollectionAssert.DoesNotContain(snapshot, arbitraryJoint);
         }
 
+        /// <summary>
+        /// <c>CopyConnectionJoints_AfterDetachExcludesJointBeforeDeferredDestroy</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyConnectionJoints_AfterDetachExcludesJointBeforeDeferredDestroy()
         {
@@ -72,6 +87,9 @@ namespace Phyzzle.Tests
             Assert.That(snapshot, Is.Empty);
         }
 
+        /// <summary>
+        /// <c>CopyConnectionJoints_ExcludesDestroyedOrDisconnectedJoints</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyConnectionJoints_ExcludesDestroyedOrDisconnectedJoints()
         {
@@ -87,6 +105,9 @@ namespace Phyzzle.Tests
             Assert.That(snapshot, Is.Empty);
         }
 
+        /// <summary>
+        /// <c>CopyConnectionJoints_DoesNotMutateTopologyOrJointPhysics</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyConnectionJoints_DoesNotMutateTopologyOrJointPhysics()
         {
@@ -107,6 +128,9 @@ namespace Phyzzle.Tests
             Assert.That(joint.connectedAnchor, Is.EqualTo(connectedAnchor));
         }
 
+        /// <summary>
+        /// <c>CreateAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateAttachable(string name, Vector3 position)
         {
             GameObject target = new(name);
@@ -119,6 +143,9 @@ namespace Phyzzle.Tests
             return attachable;
         }
 
+        /// <summary>
+        /// <c>FindJoint</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static FixedJoint FindJoint(
             AttachableObject owner,
             Rigidbody connectedBody,

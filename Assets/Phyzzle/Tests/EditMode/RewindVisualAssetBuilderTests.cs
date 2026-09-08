@@ -8,6 +8,9 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindVisualAssetBuilderTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindVisualAssetBuilderTests
     {
         private const string TempRoot =
@@ -18,6 +21,9 @@ namespace Phyzzle.Tests
         private UniversalRendererData rendererData;
         private SentinelRenderFeature sentinel;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -34,6 +40,9 @@ namespace Phyzzle.Tests
             AssetDatabase.SaveAssets();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -47,6 +56,9 @@ namespace Phyzzle.Tests
             AssetDatabase.Refresh();
         }
 
+        /// <summary>
+        /// <c>EnsureMaterials_IsIdempotentAndPreservesAssetGuids</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureMaterials_IsIdempotentAndPreservesAssetGuids()
         {
@@ -72,6 +84,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(previewGuid).And.Not.Empty);
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_AppendsOnceAndSurvivesSaveReload</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_AppendsOnceAndSurvivesSaveReload()
         {
@@ -113,6 +128,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>EnsureInstallation_DoesNotSaveAnUnrelatedDirtyAsset</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureInstallation_DoesNotSaveAnUnrelatedDirtyAsset()
         {
@@ -133,6 +151,9 @@ namespace Phyzzle.Tests
             Assert.That(EditorUtility.IsDirty(unrelated), Is.True);
         }
 
+        /// <summary>
+        /// <c>EnsureFolder</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void EnsureFolder(string parent, string child)
         {
             string path = parent + "/" + child;

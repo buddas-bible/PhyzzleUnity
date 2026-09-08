@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachmentRotationCatalogTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachmentRotationCatalogTests
     {
+        /// <summary>
+        /// <c>Poses_PreservesEightOrderedGroupsOfTwentyFour</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Poses_PreservesEightOrderedGroupsOfTwentyFour()
         {
@@ -34,6 +40,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>FindNearest_ReturnsLegacyPoseType</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(0f, 0f, 0f, (int)AttachRotationPoseType.None)]
         [TestCase(45f, 0f, 0f, (int)AttachRotationPoseType.RotateX)]
         [TestCase(0f, 45f, 0f, (int)AttachRotationPoseType.RotateY)]
@@ -50,6 +59,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>FindNearest_OppositeQuaternionSign_ReturnsSameCatalogEntry</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void FindNearest_OppositeQuaternionSign_ReturnsSameCatalogEntry()
         {
@@ -62,6 +74,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(negative.Rotation, positive.Rotation), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>FindNearest_ExactTieUsesLaterLegacyCatalogEntry</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void FindNearest_ExactTieUsesLaterLegacyCatalogEntry()
         {

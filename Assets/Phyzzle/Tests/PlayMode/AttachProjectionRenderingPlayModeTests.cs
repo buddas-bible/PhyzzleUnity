@@ -4,6 +4,9 @@ using UnityEngine.Rendering;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachProjectionRenderingPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachProjectionRenderingPlayModeTests
     {
         private const int TextureSize = 128;
@@ -20,6 +23,9 @@ namespace Phyzzle.Tests
         private Mesh sourceMesh;
         private Matrix4x4 sourceMatrix;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -53,6 +59,9 @@ namespace Phyzzle.Tests
             source.SetActive(false);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -76,6 +85,9 @@ namespace Phyzzle.Tests
             Shader.SetGlobalFloat("_AttachVisualBlend", 0f);
         }
 
+        /// <summary>
+        /// <c>Projection_ClipsPixelsBeyondReceiverDepth</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_ClipsPixelsBeyondReceiverDepth()
         {
@@ -95,6 +107,9 @@ namespace Phyzzle.Tests
             Assert.That(beyondReceiverPixel.b, Is.LessThan(0.06f));
         }
 
+        /// <summary>
+        /// <c>Projection_RenderParamsCameraScopesDrawToGameplayCamera</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_RenderParamsCameraScopesDrawToGameplayCamera()
         {
@@ -112,6 +127,9 @@ namespace Phyzzle.Tests
             Assert.That(secondaryPixel.g, Is.LessThan(PlatformColor.g + 0.06f));
         }
 
+        /// <summary>
+        /// <c>Projection_OrthographicDepthSeparatedReceiverWithinToleranceMatchesProjectionPlane</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_OrthographicDepthSeparatedReceiverWithinToleranceMatchesProjectionPlane()
         {
@@ -147,6 +165,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Projection_GlobalVisualBlendScalesIntermediateFade</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_GlobalVisualBlendScalesIntermediateFade()
         {
@@ -168,6 +189,9 @@ namespace Phyzzle.Tests
                 "A Holding exit at half blend must not render the projection at full opacity.");
         }
 
+        /// <summary>
+        /// <c>Projection_ZeroGlobalVisualBlendSuppressesTheNextDraw</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_ZeroGlobalVisualBlendSuppressesTheNextDraw()
         {
@@ -190,6 +214,9 @@ namespace Phyzzle.Tests
             Assert.That(cleaned.b, Is.EqualTo(baseline.b).Within(0.02f));
         }
 
+        /// <summary>
+        /// <c>Projection_FadesAcrossDepthToleranceBeforeClippingOutsideIt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Projection_FadesAcrossDepthToleranceBeforeClippingOutsideIt()
         {
@@ -214,6 +241,9 @@ namespace Phyzzle.Tests
                 "Smoothing must not project color beyond the configured receiver depth tolerance.");
         }
 
+        /// <summary>
+        /// <c>SubmitToPrimaryCamera</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SubmitToPrimaryCamera()
         {
             MaterialPropertyBlock properties = new();
@@ -232,6 +262,9 @@ namespace Phyzzle.Tests
             }, sourceMesh, 0, sourceMatrix);
         }
 
+        /// <summary>
+        /// <c>CreateCamera</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Camera CreateCamera(string name, RenderTexture target)
         {
             GameObject cameraObject = new(name);
@@ -246,6 +279,9 @@ namespace Phyzzle.Tests
             return camera;
         }
 
+        /// <summary>
+        /// <c>CreateTarget</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static RenderTexture CreateTarget()
         {
             RenderTexture target = new(
@@ -258,6 +294,9 @@ namespace Phyzzle.Tests
             return target;
         }
 
+        /// <summary>
+        /// <c>ReleaseTarget</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void ReleaseTarget(RenderTexture target)
         {
             if (target == null)
@@ -269,6 +308,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(target);
         }
 
+        /// <summary>
+        /// <c>ReadPixel</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Color ReadPixel(RenderTexture target, int x, int y)
         {
             RenderTexture previous = RenderTexture.active;
@@ -282,6 +324,9 @@ namespace Phyzzle.Tests
             return pixel;
         }
 
+        /// <summary>
+        /// <c>ConfigureProjectionMaterial</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void ConfigureProjectionMaterial()
         {
             Shader.SetGlobalColor("_AttachHeldColor", new Color(0.05f, 0.95f, 0.25f, 1f));

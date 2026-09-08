@@ -6,6 +6,9 @@ using static Phyzzle.Abilities.Attach.AttachRotationPoseType;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachRotationStateMachineTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachRotationStateMachineTests
     {
         private static readonly object[] Cases =
@@ -39,6 +42,9 @@ namespace Phyzzle.Tests
             C(RotateZ, Right, RotateXY, "Y-")
         };
 
+        /// <summary>
+        /// <c>Step_MatchesCppTransition</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCaseSource(nameof(Cases))]
         public void Step_MatchesCppTransition(
             int startValue,
@@ -59,6 +65,9 @@ namespace Phyzzle.Tests
                 ApplyLiteralOperations(seed, operations, 45f)), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>Begin_NormalizesRotationWhilePreservingPoseType</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Begin_NormalizesRotationWhilePreservingPoseType()
         {
@@ -74,6 +83,9 @@ namespace Phyzzle.Tests
                 machine.TargetRotation.w * machine.TargetRotation.w - 1f), Is.LessThan(0.0001f));
         }
 
+        /// <summary>
+        /// <c>Reset_ReturnsIdentityAndNonePose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Reset_ReturnsIdentityAndNonePose()
         {
@@ -86,6 +98,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(machine.TargetRotation, Quaternion.identity), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>Adjust_PreMultipliesWithoutReclassifyingPoseType</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Adjust_PreMultipliesWithoutReclassifyingPoseType()
         {
@@ -100,6 +115,9 @@ namespace Phyzzle.Tests
                 Quaternion.AngleAxis(17f, Vector3.up) * seed), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>Begin_InvalidQuaternion_RemainsFinite</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Begin_InvalidQuaternion_RemainsFinite()
         {
@@ -114,12 +132,18 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(machine.TargetRotation, Quaternion.identity), Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>C</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static object[] C(
             AttachRotationPoseType start,
             AttachRotationDirection direction,
             AttachRotationPoseType expectedType,
             string operations) => new object[] { (int)start, (int)direction, (int)expectedType, operations };
 
+        /// <summary>
+        /// <c>ApplyLiteralOperations</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Quaternion ApplyLiteralOperations(Quaternion rotation, string operations, float degrees)
         {
             foreach (string operation in operations.Split(' '))

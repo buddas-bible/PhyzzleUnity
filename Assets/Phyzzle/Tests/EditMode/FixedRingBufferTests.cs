@@ -3,8 +3,14 @@ using Phyzzle.Abilities.Rewind;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>FixedRingBufferTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class FixedRingBufferTests
     {
+        /// <summary>
+        /// <c>Add_WhenFull_DiscardsOldestValue</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Add_WhenFull_DiscardsOldestValue()
         {
@@ -21,6 +27,9 @@ namespace Phyzzle.Tests
             Assert.That(buffer.GetFromOldest(2), Is.EqualTo(4));
         }
 
+        /// <summary>
+        /// <c>Clear_ResetsCountAndWritePosition</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Clear_ResetsCountAndWritePosition()
         {

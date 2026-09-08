@@ -6,8 +6,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindSettingsTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindSettingsTests
     {
+        /// <summary>
+        /// <c>Defaults_UseTwentySecondsAndCurrentFixedTickCapacity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Defaults_UseTwentySecondsAndCurrentFixedTickCapacity()
         {
@@ -35,6 +41,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>SelectionVisualDefaults_MatchApprovedPcPresentation</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SelectionVisualDefaults_MatchApprovedPcPresentation()
         {
@@ -61,6 +70,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ProjectAsset_SerializesDesignerVisualTuning</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ProjectAsset_SerializesDesignerVisualTuning()
         {

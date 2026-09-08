@@ -6,6 +6,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachContactPreviewRendererPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachContactPreviewRendererPlayModeTests
     {
         private GameObject root;
@@ -16,6 +19,9 @@ namespace Phyzzle.Tests
         private Material material;
         private AttachContactPreviewRenderer preview;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -35,6 +41,9 @@ namespace Phyzzle.Tests
             preview.Configure(camera, material, settings);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -43,6 +52,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(settings);
         }
 
+        /// <summary>
+        /// <c>CoincidentContactAnchors_StillProduceVisibleGeometry</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CoincidentContactAnchors_StillProduceVisibleGeometry()
         {
@@ -61,6 +73,9 @@ namespace Phyzzle.Tests
             Assert.That(preview.PreviewMesh.bounds.center.magnitude, Is.LessThan(0.0001f));
         }
 
+        /// <summary>
+        /// <c>ContactAnchors_FollowBothRenderedPosesWithoutApplyingScaleTwice</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ContactAnchors_FollowBothRenderedPosesWithoutApplyingScaleTwice()
         {
@@ -96,6 +111,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Submit_DoesNotSelectMoveOrConnectEitherBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Submit_DoesNotSelectMoveOrConnectEitherBody()
         {
@@ -123,6 +141,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ClearAndDisable_RemoveQueuedGeometryAndReuseTheMesh</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ClearAndDisable_RemoveQueuedGeometryAndReuseTheMesh()
         {
@@ -142,6 +163,9 @@ namespace Phyzzle.Tests
             Assert.That(preview.LastSubmittedDrawCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>InvalidContactCameraOrBlend_RemovesThePreviousPreview</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void InvalidContactCameraOrBlend_RemovesThePreviousPreview()
         {
@@ -182,6 +206,9 @@ namespace Phyzzle.Tests
             Assert.That(mesh.vertexCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>Destroy_ReleasesTheOwnedMesh</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Destroy_ReleasesTheOwnedMesh()
         {
@@ -194,6 +221,9 @@ namespace Phyzzle.Tests
             Assert.That(mesh == null, Is.True);
         }
 
+        /// <summary>
+        /// <c>Draw_IsGreenCameraScopedAndSubtlyVisibleAtBuriedContacts</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Draw_IsGreenCameraScopedAndSubtlyVisibleAtBuriedContacts()
         {
@@ -245,6 +275,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>CreateChild</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private GameObject CreateChild(string name)
         {
             GameObject child = new(name);
@@ -252,6 +285,9 @@ namespace Phyzzle.Tests
             return child;
         }
 
+        /// <summary>
+        /// <c>ConfigureRenderCamera</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void ConfigureRenderCamera(Camera target, RenderTexture texture)
         {
             target.transform.position = new Vector3(0f, 0f, -5f);
@@ -264,6 +300,9 @@ namespace Phyzzle.Tests
             texture.Create();
         }
 
+        /// <summary>
+        /// <c>MaxGreen</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static float MaxGreen(RenderTexture target)
         {
             RenderTexture previous = RenderTexture.active;

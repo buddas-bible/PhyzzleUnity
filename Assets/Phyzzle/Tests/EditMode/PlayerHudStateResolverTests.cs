@@ -3,8 +3,14 @@ using Phyzzle.UI;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerHudStateResolverTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerHudStateResolverTests
     {
+        /// <summary>
+        /// <c>Default_HidesAbilityHud</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Default_HidesAbilityHud()
         {
@@ -14,6 +20,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.AnyVisible, Is.False);
         }
 
+        /// <summary>
+        /// <c>SelectingWithoutTarget_ShowsDefaultCrosshairAndSearchPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(PlayerHudMode.AttachSelecting)]
         [TestCase(PlayerHudMode.RewindSelecting)]
         public void SelectingWithoutTarget_ShowsDefaultCrosshairAndSearchPrompt(PlayerHudMode mode)
@@ -27,6 +36,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.Catch, Is.False);
         }
 
+        /// <summary>
+        /// <c>SelectingTarget_ShowsTargetCrosshairAndCatchPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(PlayerHudMode.AttachSelecting)]
         [TestCase(PlayerHudMode.RewindSelecting)]
         public void SelectingTarget_ShowsTargetCrosshairAndCatchPrompt(PlayerHudMode mode)
@@ -40,6 +52,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.Catch, Is.True);
         }
 
+        /// <summary>
+        /// <c>HoldingSingleObject_ShowsSingleDetachPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void HoldingSingleObject_ShowsSingleDetachPrompt()
         {
@@ -51,6 +66,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.RotationArrow, Is.False);
         }
 
+        /// <summary>
+        /// <c>HoldingIsland_ShowsIslandDetachPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void HoldingIsland_ShowsIslandDetachPrompt()
         {
@@ -61,6 +79,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.AttachHoldIsland, Is.True);
         }
 
+        /// <summary>
+        /// <c>HoldingRotate_ShowsSizeSpecificRotationPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(1, true, false)]
         [TestCase(2, false, true)]
         public void HoldingRotate_ShowsSizeSpecificRotationPrompt(
@@ -81,6 +102,9 @@ namespace Phyzzle.Tests
             Assert.That(visual.AttachHoldIsland, Is.False);
         }
 
+        /// <summary>
+        /// <c>HoldingWhileTouching_ShowsAttachPrompt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void HoldingWhileTouching_ShowsAttachPrompt()
         {

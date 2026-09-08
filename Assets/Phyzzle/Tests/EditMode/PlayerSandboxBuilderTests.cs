@@ -7,12 +7,18 @@ using UnityEngine.EventSystems;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerSandboxBuilderTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerSandboxBuilderTests
     {
         private GameObject player;
         private RewindSettings settings;
         private Material previewMaterial;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -23,6 +29,9 @@ namespace Phyzzle.Tests
             previewMaterial = new Material(shader);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -31,6 +40,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(previewMaterial);
         }
 
+        /// <summary>
+        /// <c>EnsureRewindVisualController_ConfiguresExactlyOneWithoutGameplayComponents</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRewindVisualController_ConfiguresExactlyOneWithoutGameplayComponents()
         {

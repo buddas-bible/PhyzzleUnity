@@ -8,6 +8,9 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachRenderFeatureTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachRenderFeatureTests
     {
         private const int RenderSize = 64;
@@ -17,6 +20,9 @@ namespace Phyzzle.Tests
         private Material projectionMaterial;
         private AttachRenderFeature feature;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -33,6 +39,9 @@ namespace Phyzzle.Tests
             feature = ScriptableObject.CreateInstance<AttachRenderFeature>();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -42,6 +51,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(projectionMaterial);
         }
 
+        /// <summary>
+        /// <c>Shaders_ExposeRolePassesAndTransparentProjection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Shaders_ExposeRolePassesAndTransparentProjection()
         {
@@ -52,6 +64,9 @@ namespace Phyzzle.Tests
             Assert.That(projectionMaterial.renderQueue, Is.InRange(3000, 3999));
         }
 
+        /// <summary>
+        /// <c>Configure_UsesPostProcessingIntermediateMask</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Configure_UsesPostProcessingIntermediateMask()
         {
@@ -64,6 +79,9 @@ namespace Phyzzle.Tests
             Assert.That(feature.MaskFormat, Is.EqualTo(GraphicsFormat.R8G8B8A8_UNorm));
         }
 
+        /// <summary>
+        /// <c>ShouldEnqueue_AcceptsOnlyActiveBaseGameCamera</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ShouldEnqueue_AcceptsOnlyActiveBaseGameCamera()
         {
@@ -79,12 +97,18 @@ namespace Phyzzle.Tests
                 CameraType.Game, CameraRenderType.Base, false, 1f), Is.False);
         }
 
+        /// <summary>
+        /// <c>SupportsRendererData_RejectsMissingFeature</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SupportsRendererData_RejectsMissingFeature()
         {
             Assert.That(AttachRenderFeature.SupportsRendererData(null), Is.False);
         }
 
+        /// <summary>
+        /// <c>Feature_RenderingUsesDepthCullRolePrecedenceBlendAndHeldPulse</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Feature_RenderingUsesDepthCullRolePrecedenceBlendAndHeldPulse()
         {
@@ -221,6 +245,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Render</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Color Render(
             Camera camera,
             RenderTexture target,
@@ -286,6 +313,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>RenderDepthProbe</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Color RenderDepthProbe(
             Camera camera,
             RenderTexture target,
@@ -320,6 +350,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>CreateBackfaceTriangle</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Mesh CreateBackfaceTriangle()
         {
             Mesh mesh = new();
@@ -333,6 +366,9 @@ namespace Phyzzle.Tests
             return mesh;
         }
 
+        /// <summary>
+        /// <c>ReadCenterPixel</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Color ReadCenterPixel(RenderTexture target)
         {
             RenderTexture previous = RenderTexture.active;
@@ -346,9 +382,15 @@ namespace Phyzzle.Tests
             return pixel;
         }
 
+        /// <summary>
+        /// <c>ColorDistance</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static float ColorDistance(Color first, Color second) =>
             Vector3.Distance(new Vector3(first.r, first.g, first.b), new Vector3(second.r, second.g, second.b));
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>AttachGlobals</c> 보조 타입이다.
+        /// </summary>
         private readonly struct AttachGlobals
         {
             private readonly float blend, eligibleWidth, focusedWidth, heldWidth, pulseSpeed, pulseStrength;
@@ -364,6 +406,9 @@ namespace Phyzzle.Tests
                 this.pulseSpeed = pulseSpeed; this.pulseStrength = pulseStrength; this.mask = mask;
             }
 
+            /// <summary>
+            /// <c>Capture</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal static AttachGlobals Capture() => new(
                 Shader.GetGlobalFloat(AttachVisualShaderIds.VisualBlend), Shader.GetGlobalColor(AttachVisualShaderIds.EligibleColor),
                 Shader.GetGlobalColor(AttachVisualShaderIds.FocusedColor), Shader.GetGlobalColor(AttachVisualShaderIds.HeldColor),
@@ -371,6 +416,9 @@ namespace Phyzzle.Tests
                 Shader.GetGlobalFloat(AttachVisualShaderIds.HeldOutlinePixels), Shader.GetGlobalFloat(AttachVisualShaderIds.HeldPulseSpeed),
                 Shader.GetGlobalFloat(AttachVisualShaderIds.HeldPulseStrength), Shader.GetGlobalTexture(AttachVisualShaderIds.MaskTexture));
 
+            /// <summary>
+            /// <c>Restore</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void Restore()
             {
                 Shader.SetGlobalFloat(AttachVisualShaderIds.VisualBlend, blend); Shader.SetGlobalColor(AttachVisualShaderIds.EligibleColor, eligible);
@@ -381,8 +429,14 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>MaskProbeFeature</c> 보조 타입이다.
+        /// </summary>
         private sealed class MaskProbeFeature : ScriptableRendererFeature
         {
+            /// <summary>
+            /// 테스트에서 사용하는 <c>PassData</c> 보조 타입이다.
+            /// </summary>
             private sealed class PassData
             {
                 internal TextureHandle Source;
@@ -394,11 +448,17 @@ namespace Phyzzle.Tests
 
             internal bool Enabled { get; set; }
 
+            /// <summary>
+            /// <c>Configure</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void Configure(Material sourceMaterial)
             {
                 material = sourceMaterial;
             }
 
+            /// <summary>
+            /// <c>Create</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             public override void Create()
             {
                 pass = new MaskProbePass(this)
@@ -407,6 +467,9 @@ namespace Phyzzle.Tests
                 };
             }
 
+            /// <summary>
+            /// <c>AddRenderPasses</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
             {
                 if (Enabled && material != null)
@@ -415,6 +478,9 @@ namespace Phyzzle.Tests
                 }
             }
 
+            /// <summary>
+            /// 테스트에서 사용하는 <c>MaskProbePass</c> 보조 타입이다.
+            /// </summary>
             private sealed class MaskProbePass : ScriptableRenderPass
             {
                 private readonly MaskProbeFeature feature;
@@ -424,6 +490,9 @@ namespace Phyzzle.Tests
                     feature = sourceFeature;
                 }
 
+                /// <summary>
+                /// <c>RecordRenderGraph</c> 테스트 지원 동작을 수행한다.
+                /// </summary>
                 public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
                 {
                     if (!feature.Enabled || feature.material == null)
@@ -453,8 +522,14 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>DepthProbeFeature</c> 보조 타입이다.
+        /// </summary>
         private sealed class DepthProbeFeature : ScriptableRendererFeature
         {
+            /// <summary>
+            /// 테스트에서 사용하는 <c>PassData</c> 보조 타입이다.
+            /// </summary>
             private sealed class PassData
             {
                 internal Material Material;
@@ -473,18 +548,27 @@ namespace Phyzzle.Tests
                 }
             }
 
+            /// <summary>
+            /// <c>Configure</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void Configure(Material material, Mesh mesh)
             {
                 pass ??= new DepthProbePass();
                 pass.Setup(material, mesh);
             }
 
+            /// <summary>
+            /// <c>Create</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             public override void Create()
             {
                 pass ??= new DepthProbePass();
                 pass.renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
             }
 
+            /// <summary>
+            /// <c>AddRenderPasses</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
             {
                 if (pass != null && pass.Enabled)
@@ -493,6 +577,9 @@ namespace Phyzzle.Tests
                 }
             }
 
+            /// <summary>
+            /// 테스트에서 사용하는 <c>DepthProbePass</c> 보조 타입이다.
+            /// </summary>
             private sealed class DepthProbePass : ScriptableRenderPass
             {
                 private Material material;
@@ -500,12 +587,18 @@ namespace Phyzzle.Tests
 
                 internal bool Enabled { get; set; }
 
+                /// <summary>
+                /// <c>Setup</c> 테스트 지원 동작을 수행한다.
+                /// </summary>
                 internal void Setup(Material sourceMaterial, Mesh sourceMesh)
                 {
                     material = sourceMaterial;
                     mesh = sourceMesh;
                 }
 
+                /// <summary>
+                /// <c>RecordRenderGraph</c> 테스트 지원 동작을 수행한다.
+                /// </summary>
                 public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
                 {
                     if (!Enabled || material == null || mesh == null)

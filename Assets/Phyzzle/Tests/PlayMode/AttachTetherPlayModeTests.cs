@@ -6,6 +6,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachTetherPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachTetherPlayModeTests
     {
         private GameObject root;
@@ -16,6 +19,9 @@ namespace Phyzzle.Tests
         private Material material;
         private AttachTetherRenderer tether;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -35,6 +41,9 @@ namespace Phyzzle.Tests
             tether.Configure(camera, hand, material, settings);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -43,6 +52,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(settings);
         }
 
+        /// <summary>
+        /// <c>Submit_FollowsBothEndpointsWithoutChangingPhysics</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Submit_FollowsBothEndpointsWithoutChangingPhysics()
         {
@@ -68,6 +80,9 @@ namespace Phyzzle.Tests
             Assert.That(held.IsSelected, Is.False);
         }
 
+        /// <summary>
+        /// <c>Submit_UsesTheRenderedPoseWhenItDiffersFromThePhysicsPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Submit_UsesTheRenderedPoseWhenItDiffersFromThePhysicsPose()
         {
@@ -94,6 +109,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ClearAndDisable_RemoveGeometryAndAllowReuse</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ClearAndDisable_RemoveGeometryAndAllowReuse()
         {
@@ -116,6 +134,9 @@ namespace Phyzzle.Tests
             AssertEndpoints();
         }
 
+        /// <summary>
+        /// <c>InvalidInputsAndZeroBlend_RemoveThePreviousTether</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void InvalidInputsAndZeroBlend_RemoveThePreviousTether()
         {
@@ -140,6 +161,9 @@ namespace Phyzzle.Tests
             Assert.That(tether.RibbonMesh.vertexCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>Destroy_ReleasesTheRetainedMesh</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Destroy_ReleasesTheRetainedMesh()
         {
@@ -151,6 +175,9 @@ namespace Phyzzle.Tests
             Assert.That(mesh == null, Is.True);
         }
 
+        /// <summary>
+        /// <c>Draw_IsGreenAndScopedToTheConfiguredCamera</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Draw_IsGreenAndScopedToTheConfiguredCamera()
         {
@@ -203,6 +230,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>CreateChild</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private GameObject CreateChild(string name)
         {
             GameObject child = new(name);
@@ -210,6 +240,9 @@ namespace Phyzzle.Tests
             return child;
         }
 
+        /// <summary>
+        /// <c>AssertEndpoints</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void AssertEndpoints()
         {
             Assert.That(tether.LastSubmittedDrawCount, Is.EqualTo(1));
@@ -220,6 +253,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.0001f));
         }
 
+        /// <summary>
+        /// <c>ConfigureRenderCamera</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void ConfigureRenderCamera(Camera target, RenderTexture texture)
         {
             target.transform.position = new Vector3(0f, 0f, -5f);
@@ -231,6 +267,9 @@ namespace Phyzzle.Tests
             texture.Create();
         }
 
+        /// <summary>
+        /// <c>MaxGreen</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static float MaxGreen(RenderTexture target)
         {
             RenderTexture previous = RenderTexture.active;

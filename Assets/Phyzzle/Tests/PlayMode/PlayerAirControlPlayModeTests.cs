@@ -6,6 +6,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerAirControlPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerAirControlPlayModeTests
     {
         private GameObject ground;
@@ -16,6 +19,9 @@ namespace Phyzzle.Tests
         private PlayerMotor motor;
         private Rigidbody body;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnitySetUp]
         public IEnumerator SetUp()
         {
@@ -69,6 +75,9 @@ namespace Phyzzle.Tests
             yield return new WaitForFixedUpdate();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -79,6 +88,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>TickFixed_AirborneNoInput_PreservesExistingHorizontalMomentum</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AirborneNoInput_PreservesExistingHorizontalMomentum()
         {
@@ -98,6 +110,9 @@ namespace Phyzzle.Tests
             Assert.That(actualSpeed, Is.EqualTo(10f).Within(0.1f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_AirborneLateralInput_AddsControlWithoutBrakingExistingForwardMomentum</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AirborneLateralInput_AddsControlWithoutBrakingExistingForwardMomentum()
         {
@@ -121,6 +136,9 @@ namespace Phyzzle.Tests
                 "Air control should not erase existing forward momentum on an unrelated axis.");
         }
 
+        /// <summary>
+        /// <c>TickFixed_AirborneSameDirectionInput_DoesNotClampFasterExistingMomentumToMoveSpeed</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AirborneSameDirectionInput_DoesNotClampFasterExistingMomentumToMoveSpeed()
         {
@@ -142,6 +160,9 @@ namespace Phyzzle.Tests
                 "Air input must not clamp externally acquired speed down to locomotion moveSpeed.");
         }
 
+        /// <summary>
+        /// <c>PrepareAirborne</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private IEnumerator PrepareAirborne(Vector3 initialVelocity)
         {
             groundSensor.enabled = false;

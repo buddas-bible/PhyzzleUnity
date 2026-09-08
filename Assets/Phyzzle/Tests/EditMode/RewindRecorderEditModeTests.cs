@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindRecorderEditModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindRecorderEditModeTests
     {
         private GameObject coordinatorObject;
@@ -17,6 +20,9 @@ namespace Phyzzle.Tests
         private Rigidbody body;
         private float previousFixedDeltaTime;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -34,6 +40,9 @@ namespace Phyzzle.Tests
             recorder.Configure(settings, coordinator);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -43,6 +52,9 @@ namespace Phyzzle.Tests
             Time.fixedDeltaTime = previousFixedDeltaTime;
         }
 
+        /// <summary>
+        /// <c>TickRecord_StationaryTicksPreserveLastMotionWindow</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickRecord_StationaryTicksPreserveLastMotionWindow()
         {
@@ -58,6 +70,9 @@ namespace Phyzzle.Tests
             Assert.That(recorder.SnapshotCount, Is.EqualTo(stoppedCount));
         }
 
+        /// <summary>
+        /// <c>TickRecord_PositionExactlyAtConfiguredThreshold_RecordsPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickRecord_PositionExactlyAtConfiguredThreshold_RecordsPose()
         {
@@ -74,6 +89,9 @@ namespace Phyzzle.Tests
             Assert.That(recorder.SnapshotCount, Is.EqualTo(2));
         }
 
+        /// <summary>
+        /// <c>TickRecord_RotationExactlyAtConfiguredThreshold_RecordsPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickRecord_RotationExactlyAtConfiguredThreshold_RecordsPose()
         {
@@ -90,6 +108,9 @@ namespace Phyzzle.Tests
             Assert.That(recorder.SnapshotCount, Is.EqualTo(2));
         }
 
+        /// <summary>
+        /// <c>TrySampleReverse_InterpolatesPositionAndRotation</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TrySampleReverse_InterpolatesPositionAndRotation()
         {
@@ -103,6 +124,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(sample.Rotation, Quaternion.Euler(0f, 45f, 0f)), Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TrySampleReverse_ExactAvailableHistoryDuration_ReturnsOldestPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TrySampleReverse_ExactAvailableHistoryDuration_ReturnsOldestPose()
         {
@@ -125,6 +149,9 @@ namespace Phyzzle.Tests
                 $"oldestPosition={sample.Position}; motionTick={sample.MotionTick}");
         }
 
+        /// <summary>
+        /// <c>CopyHistoryNewestFirst_ReturnsEveryPoseWithoutChangingRecorderOrBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyHistoryNewestFirst_ReturnsEveryPoseWithoutChangingRecorderOrBody()
         {
@@ -170,6 +197,9 @@ namespace Phyzzle.Tests
             Assert.That(body.isKinematic, Is.False);
         }
 
+        /// <summary>
+        /// <c>CopyHistoryNewestFirst_EmptyHistoryClearsDestination</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyHistoryNewestFirst_EmptyHistoryClearsDestination()
         {
@@ -185,6 +215,9 @@ namespace Phyzzle.Tests
             Assert.That(recorder.SnapshotCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>CopyHistoryNewestFirst_NullDestinationThrows</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CopyHistoryNewestFirst_NullDestinationThrows()
         {

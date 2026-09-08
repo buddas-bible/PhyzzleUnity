@@ -9,8 +9,14 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindVisualControllerPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindVisualControllerPlayModeTests
     {
+        /// <summary>
+        /// 테스트에서 사용하는 <c>TargetFixture</c> 보조 타입이다.
+        /// </summary>
         private sealed class TargetFixture
         {
             internal GameObject Object;
@@ -37,6 +43,9 @@ namespace Phyzzle.Tests
         private TargetFixture Current => targets[0];
         private TargetFixture Nearby => targets[1];
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -94,6 +103,9 @@ namespace Phyzzle.Tests
             UnityEngine.Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -139,6 +151,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>Selecting_UsesUnscaledBlendAndAppliesThreeMaskRolesWithoutPhysicsChanges</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Selecting_UsesUnscaledBlendAndAppliesThreeMaskRolesWithoutPhysicsChanges()
         {
@@ -169,6 +184,9 @@ namespace Phyzzle.Tests
             Assert.That(coordinator.IsRewindingAny, Is.False);
         }
 
+        /// <summary>
+        /// <c>LeavingSelection_KeepsPresentationDuringExitThenRestoresExactLayers</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LeavingSelection_KeepsPresentationDuringExitThenRestoresExactLayers()
         {
@@ -197,6 +215,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(Nearby.OriginalRenderingLayers));
         }
 
+        /// <summary>
+        /// <c>LeavingSelection_KeepsGhostsAtRecordedWorldPosesWhenPlayerMoves</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LeavingSelection_KeepsGhostsAtRecordedWorldPosesWhenPlayerMoves()
         {
@@ -220,6 +241,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Retargeting_MovesActiveRoleInTheSameVisualTick</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Retargeting_MovesActiveRoleInTheSameVisualTick()
         {
@@ -241,6 +265,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(new Vector3(4f, 0f, 5f)));
         }
 
+        /// <summary>
+        /// <c>DisabledCurrentRecorder_ClearsItsPreviewAndOwnedLayersImmediately</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisabledCurrentRecorder_ClearsItsPreviewAndOwnedLayersImmediately()
         {
@@ -262,6 +289,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(Nearby.OriginalRenderingLayers | RewindVisualLayers.Eligible));
         }
 
+        /// <summary>
+        /// <c>DisabledTargetingOwner_HardCleansImmediately</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisabledTargetingOwner_HardCleansImmediately()
         {
@@ -274,6 +304,9 @@ namespace Phyzzle.Tests
             AssertVisualsHardClean();
         }
 
+        /// <summary>
+        /// <c>DisabledCurrentRecorderDuringExit_HardCleansImmediately</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisabledCurrentRecorderDuringExit_HardCleansImmediately()
         {
@@ -289,6 +322,9 @@ namespace Phyzzle.Tests
             AssertVisualsHardClean();
         }
 
+        /// <summary>
+        /// <c>GhostMaskWeight_TracksConfiguredOpacityIncludingZero</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void GhostMaskWeight_TracksConfiguredOpacityIncludingZero()
         {
@@ -309,6 +345,9 @@ namespace Phyzzle.Tests
             Assert.That(properties.GetFloat(maskWeight), Is.Zero);
         }
 
+        /// <summary>
+        /// <c>DisablingController_HardCleansMasksGeometryAndGlobalBlend</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisablingController_HardCleansMasksGeometryAndGlobalBlend()
         {
@@ -328,6 +367,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(Nearby.OriginalRenderingLayers));
         }
 
+        /// <summary>
+        /// <c>Preview_PreservesEndpointPosesAndUsesWiderGhostGapsForFastMotion</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Preview_PreservesEndpointPosesAndUsesWiderGhostGapsForFastMotion()
         {
@@ -379,6 +421,9 @@ namespace Phyzzle.Tests
             Assert.That(ActiveGhostRoots(), Is.EqualTo(roots));
         }
 
+        /// <summary>
+        /// <c>Preview_CopiesAllMeshSubmeshesButDoesNotFabricateSkinnedGhosts</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Preview_CopiesAllMeshSubmeshesButDoesNotFabricateSkinnedGhosts()
         {
@@ -426,6 +471,9 @@ namespace Phyzzle.Tests
                 Is.True);
         }
 
+        /// <summary>
+        /// <c>EnterSelection</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void EnterSelection()
         {
             UnityEngine.Physics.SyncTransforms();
@@ -435,6 +483,9 @@ namespace Phyzzle.Tests
             CollectionAssert.Contains((ICollection)targeting.Nearby, Nearby.Recorder);
         }
 
+        /// <summary>
+        /// <c>CreateTarget</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private TargetFixture CreateTarget(string name, Vector3 position, int unrelatedLayerBit)
         {
             GameObject targetObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -461,6 +512,9 @@ namespace Phyzzle.Tests
             };
         }
 
+        /// <summary>
+        /// <c>ActiveGhostRoots</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private List<Transform> ActiveGhostRoots()
         {
             Transform previewRoot = visuals.PreviewPath.transform.parent;
@@ -477,6 +531,9 @@ namespace Phyzzle.Tests
             return result;
         }
 
+        /// <summary>
+        /// <c>AssertVisualsHardClean</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void AssertVisualsHardClean()
         {
             Assert.That(visuals.SelectionBlend, Is.Zero);

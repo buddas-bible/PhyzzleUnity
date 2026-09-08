@@ -5,8 +5,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachVisualSettingsTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachVisualSettingsTests
     {
+        /// <summary>
+        /// <c>VisualLayerBits_AreDistinctAndDoNotOverlapRewind</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void VisualLayerBits_AreDistinctAndDoNotOverlapRewind()
         {
@@ -17,6 +23,9 @@ namespace Phyzzle.Tests
             Assert.That(AttachVisualLayers.Owned & RewindVisualLayers.Owned, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>VisualDefaults_MatchApprovedDesign</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void VisualDefaults_MatchApprovedDesign()
         {

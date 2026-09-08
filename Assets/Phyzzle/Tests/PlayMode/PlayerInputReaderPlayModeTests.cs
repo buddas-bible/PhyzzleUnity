@@ -10,6 +10,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerInputReaderPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerInputReaderPlayModeTests
     {
         private readonly InputTestFixture inputFixture = new();
@@ -19,6 +22,9 @@ namespace Phyzzle.Tests
         private Mouse mouse;
         private Gamepad gamepad;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -30,6 +36,9 @@ namespace Phyzzle.Tests
             reader = inputObject.AddComponent<PlayerInputReader>();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -38,6 +47,9 @@ namespace Phyzzle.Tests
             inputFixture.TearDown();
         }
 
+        /// <summary>
+        /// <c>MouseDeltaAndArrowKey_ProduceUnclampedPointerLookAndIndependentDpadCommand</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void MouseDeltaAndArrowKey_ProduceUnclampedPointerLookAndIndependentDpadCommand()
         {
@@ -59,6 +71,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.LeftTrigger, Is.EqualTo(0f));
         }
 
+        /// <summary>
+        /// <c>GamepadRightStickAndDpad_RemainRateLookAndCommandInputs</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void GamepadRightStickAndDpad_RemainRateLookAndCommandInputs()
         {
@@ -80,6 +95,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.CurrentInputDevice, Is.EqualTo(PlayerInputDeviceKind.Gamepad));
         }
 
+        /// <summary>
+        /// <c>Wasd_RemainsMovementWithoutKeyboardTriggerPath</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Wasd_RemainsMovementWithoutKeyboardTriggerPath()
         {
@@ -96,6 +114,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.LeftTrigger, Is.EqualTo(0f));
         }
 
+        /// <summary>
+        /// <c>MouseActivityAfterGamepad_SwitchesUiModeBackToKeyboardMouse</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void MouseActivityAfterGamepad_SwitchesUiModeBackToKeyboardMouse()
         {
@@ -113,6 +134,9 @@ namespace Phyzzle.Tests
             Assert.That(ReadLookIsPointerDelta(), Is.True);
         }
 
+        /// <summary>
+        /// <c>ArrowDpadPressed_FiresOnceUntilReleasedAndPressedAgain</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ArrowDpadPressed_FiresOnceUntilReleasedAndPressedAgain()
         {
@@ -135,6 +159,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.DpadPressed.x, Is.EqualTo(1f));
         }
 
+        /// <summary>
+        /// <c>ArrowAndDigitSelectionInputs_AreSeparated</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ArrowAndDigitSelectionInputs_AreSeparated()
         {
@@ -154,6 +181,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.ConsumeNextAbility(), Is.False);
         }
 
+        /// <summary>
+        /// <c>ArrowDpadPressed_OppositeDirectionWithoutNeutralFiresNewCommand</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ArrowDpadPressed_OppositeDirectionWithoutNeutralFiresNewCommand()
         {
@@ -169,6 +199,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.DpadPressed.y, Is.EqualTo(0f));
         }
 
+        /// <summary>
+        /// <c>ArrowDpadPressed_DiagonalSignChangeFiresBothNewCommands</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ArrowDpadPressed_DiagonalSignChangeFiresBothNewCommands()
         {
@@ -188,6 +221,9 @@ namespace Phyzzle.Tests
             Assert.That(reader.DpadPressed.y, Is.EqualTo(-1f));
         }
 
+        /// <summary>
+        /// <c>Disable_DoesNotDisablePreEnabledReferencedAction</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Disable_DoesNotDisablePreEnabledReferencedAction()
         {
@@ -216,6 +252,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(sharedAsset);
         }
 
+        /// <summary>
+        /// <c>Disable_AfterMouseInputClearsPointerSourceState</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Disable_AfterMouseInputClearsPointerSourceState()
         {
@@ -230,6 +269,9 @@ namespace Phyzzle.Tests
             Assert.That(ReadLookIsPointerDelta(), Is.False);
         }
 
+        /// <summary>
+        /// <c>PhyzzlePlayer_LargeMouseDeltaReachesNormalCameraUnclamped</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void PhyzzlePlayer_LargeMouseDeltaReachesNormalCameraUnclamped()
         {
@@ -264,6 +306,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(settings);
         }
 
+        /// <summary>
+        /// <c>PhyzzlePlayer_FocusAndDisableOwnGameplayCursorOnlyInPlayMode</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void PhyzzlePlayer_FocusAndDisableOwnGameplayCursorOnlyInPlayMode()
         {
@@ -296,6 +341,9 @@ namespace Phyzzle.Tests
             Assert.That(Cursor.visible, Is.EqualTo(!Application.isFocused));
         }
 
+        /// <summary>
+        /// <c>ReadLookIsPointerDelta</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private bool ReadLookIsPointerDelta()
         {
             PropertyInfo property = typeof(PlayerInputReader).GetProperty("LookIsPointerDelta");

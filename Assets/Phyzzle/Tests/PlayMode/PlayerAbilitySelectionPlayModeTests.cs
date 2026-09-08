@@ -11,6 +11,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerAbilitySelectionPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerAbilitySelectionPlayModeTests
     {
         private readonly InputTestFixture inputFixture = new();
@@ -24,6 +27,9 @@ namespace Phyzzle.Tests
         private Keyboard keyboard;
         private Gamepad gamepad;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -67,6 +73,9 @@ namespace Phyzzle.Tests
             Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -78,6 +87,9 @@ namespace Phyzzle.Tests
             inputFixture.TearDown();
         }
 
+        /// <summary>
+        /// <c>GamepadDpadRight_CyclesRewindBackToAttach</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void GamepadDpadRight_CyclesRewindBackToAttach()
         {
@@ -92,6 +104,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(PlayerAbilityController.AbilityKind.Attach));
         }
 
+        /// <summary>
+        /// <c>KeyboardLeftArrow_CyclesAttachBackToRewind</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void KeyboardLeftArrow_CyclesAttachBackToRewind()
         {
@@ -101,6 +116,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(PlayerAbilityController.AbilityKind.Rewind));
         }
 
+        /// <summary>
+        /// <c>KeyboardDigits_DirectlySelectAttachAndRewind</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void KeyboardDigits_DirectlySelectAttachAndRewind()
         {
@@ -115,6 +133,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(PlayerAbilityController.AbilityKind.Attach));
         }
 
+        /// <summary>
+        /// <c>AttachHolding_DpadCommandDoesNotChangeSelectedAbility</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void AttachHolding_DpadCommandDoesNotChangeSelectedAbility()
         {
@@ -138,6 +159,9 @@ namespace Phyzzle.Tests
             Assert.That(attach.State, Is.EqualTo(AttachAbilityController.AbilityState.Holding));
         }
 
+        /// <summary>
+        /// <c>PressGamepad</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void PressGamepad(GamepadButton button)
         {
             InputSystem.QueueStateEvent(gamepad, new GamepadState
@@ -149,6 +173,9 @@ namespace Phyzzle.Tests
             abilities.TickUpdate(input);
         }
 
+        /// <summary>
+        /// <c>ReleaseGamepad</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void ReleaseGamepad()
         {
             InputSystem.QueueStateEvent(gamepad, new GamepadState());
@@ -157,6 +184,9 @@ namespace Phyzzle.Tests
             abilities.TickUpdate(input);
         }
 
+        /// <summary>
+        /// <c>PressKeyboard</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void PressKeyboard(Key key)
         {
             InputSystem.QueueStateEvent(keyboard, new KeyboardState(key));
@@ -165,6 +195,9 @@ namespace Phyzzle.Tests
             abilities.TickUpdate(input);
         }
 
+        /// <summary>
+        /// <c>ReleaseKeyboard</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void ReleaseKeyboard()
         {
             InputSystem.QueueStateEvent(keyboard, new KeyboardState());

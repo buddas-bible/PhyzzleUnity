@@ -7,6 +7,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerCameraRigPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerCameraRigPlayModeTests
     {
         private GameObject playerObject;
@@ -17,6 +20,9 @@ namespace Phyzzle.Tests
         private PlayerCameraSettings settings;
         private PlayerCameraRig rig;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -44,6 +50,9 @@ namespace Phyzzle.Tests
                 settings);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -53,6 +62,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>EnterHoldingCamera_PreservesCurrentWorldPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnterHoldingCamera_PreservesCurrentWorldPose()
         {
@@ -69,6 +81,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>HoldingCamera_CopiesModelRotationBeforeApplyingPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator HoldingCamera_CopiesModelRotationBeforeApplyingPose()
         {
@@ -84,6 +99,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.001f));
         }
 
+        /// <summary>
+        /// <c>ExitHoldingCamera_MovesBackTowardDefaultPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator ExitHoldingCamera_MovesBackTowardDefaultPose()
         {
@@ -104,6 +122,9 @@ namespace Phyzzle.Tests
             Assert.That(distanceAfterExit, Is.LessThan(distanceBeforeExit));
         }
 
+        /// <summary>
+        /// <c>TickLate_PointerDeltaAppliesPerFrameWithoutDeltaTimeScaling</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickLate_PointerDeltaAppliesPerFrameWithoutDeltaTimeScaling()
         {
@@ -119,6 +140,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(1.8f).Within(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickLate_StickLookRemainsDegreesPerSecond</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickLate_StickLookRemainsDegreesPerSecond()
         {
@@ -140,6 +164,9 @@ namespace Phyzzle.Tests
         }
     }
 
+    /// <summary>
+    /// <c>AttachAbilityCameraPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachAbilityCameraPlayModeTests
     {
         private GameObject playerObject;
@@ -153,6 +180,9 @@ namespace Phyzzle.Tests
         private PlayerCameraRig rig;
         private Rigidbody targetBody;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -204,6 +234,9 @@ namespace Phyzzle.Tests
             Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -215,6 +248,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>TryBeginHolding_MakesCameraFollowHeldTargetHeight</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TryBeginHolding_MakesCameraFollowHeldTargetHeight()
         {
@@ -233,6 +269,9 @@ namespace Phyzzle.Tests
             Assert.That(coreObject.transform.localPosition.z, Is.LessThan(initialZ));
         }
 
+        /// <summary>
+        /// <c>TryBeginHolding_DisablesMovementFacingUntilReturnToDefault</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TryBeginHolding_DisablesMovementFacingUntilReturnToDefault()
         {

@@ -7,6 +7,9 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindRenderFeatureTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindRenderFeatureTests
     {
         private Material maskMaterial;
@@ -14,6 +17,9 @@ namespace Phyzzle.Tests
         private Material previewMaterial;
         private RewindRenderFeature feature;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -29,6 +35,9 @@ namespace Phyzzle.Tests
             feature = ScriptableObject.CreateInstance<RewindRenderFeature>();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -38,6 +47,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(previewMaterial);
         }
 
+        /// <summary>
+        /// <c>MaskAndPreviewShaders_ExposeRequiredRenderContracts</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void MaskAndPreviewShaders_ExposeRequiredRenderContracts()
         {
@@ -53,6 +65,9 @@ namespace Phyzzle.Tests
             StringAssert.Contains("Blend SrcAlpha One", previewSource);
         }
 
+        /// <summary>
+        /// <c>SupportedRenderer_IsPcOnly</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SupportedRenderer_IsPcOnly()
         {
@@ -75,6 +90,9 @@ namespace Phyzzle.Tests
             Assert.That(RewindVisualController.SupportsPipeline(null, pcPipeline), Is.False);
         }
 
+        /// <summary>
+        /// <c>Configure_CreatesOnePostProcessingPassThatRequiresIntermediateColor</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Configure_CreatesOnePostProcessingPassThatRequiresIntermediateColor()
         {
@@ -87,6 +105,9 @@ namespace Phyzzle.Tests
             Assert.That(feature.MaskFormat, Is.EqualTo(GraphicsFormat.R8G8B8A8_UNorm));
         }
 
+        /// <summary>
+        /// <c>Configure_MissingMaterialFailsClosed</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Configure_MissingMaterialFailsClosed()
         {
@@ -102,6 +123,9 @@ namespace Phyzzle.Tests
                 Is.False);
         }
 
+        /// <summary>
+        /// <c>ShouldEnqueue_AcceptsOnlyActiveBaseGameCamera</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ShouldEnqueue_AcceptsOnlyActiveBaseGameCamera()
         {

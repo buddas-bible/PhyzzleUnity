@@ -9,6 +9,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachGlueRendererPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachGlueRendererPlayModeTests
     {
         private GameObject root;
@@ -21,6 +24,9 @@ namespace Phyzzle.Tests
         private AttachableObject second;
         private RenderPipelineAsset pipeline;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -41,6 +47,9 @@ namespace Phyzzle.Tests
             Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -50,6 +59,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>ConfirmedConnection_RendersWithoutHoldingAndDoesNotChangePhysics</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ConfirmedConnection_RendersWithoutHoldingAndDoesNotChangePhysics()
         {
@@ -83,6 +95,9 @@ namespace Phyzzle.Tests
             Assert.That(GetMesh(joint), Is.SameAs(mesh));
         }
 
+        /// <summary>
+        /// <c>LocalJointAnchors_FollowScaledAndRotatedRenderedPoses</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void LocalJointAnchors_FollowScaledAndRotatedRenderedPoses()
         {
@@ -115,6 +130,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>DetachAndObjectDestruction_RemoveOnlyTheirGlue</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator DetachAndObjectDestruction_RemoveOnlyTheirGlue()
         {
@@ -141,6 +159,9 @@ namespace Phyzzle.Tests
             Assert.That(survivingMesh == null || survivingMesh.vertexCount == 0, Is.True);
         }
 
+        /// <summary>
+        /// <c>DestroyedJoint_IsRemovedEvenWithoutATopologyChange</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator DestroyedJoint_IsRemovedEvenWithoutATopologyChange()
         {
@@ -158,6 +179,9 @@ namespace Phyzzle.Tests
             Assert.That(mesh == null || mesh.vertexCount == 0, Is.True);
         }
 
+        /// <summary>
+        /// <c>DisableAndUnsupportedPipeline_ClearAndRecoverFromTheActualConnections</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DisableAndUnsupportedPipeline_ClearAndRecoverFromTheActualConnections()
         {
@@ -190,6 +214,9 @@ namespace Phyzzle.Tests
             Assert.That(joint != null, Is.True, "Visual cleanup must not destroy the actual connection.");
         }
 
+        /// <summary>
+        /// <c>Connect</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private FixedJoint Connect(AttachableObject a, AttachableObject b, Vector3 anchor)
         {
             Assert.That(service.Attach(a, b, anchor), Is.True);
@@ -197,6 +224,9 @@ namespace Phyzzle.Tests
             return joints[joints.Length - 1];
         }
 
+        /// <summary>
+        /// <c>GetMesh</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private Mesh GetMesh(FixedJoint joint)
         {
             FieldInfo field = typeof(AttachGlueRenderer).GetField("blobs", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -207,6 +237,9 @@ namespace Phyzzle.Tests
             return (Mesh)blob.GetType().GetProperty("Mesh", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(blob);
         }
 
+        /// <summary>
+        /// <c>CreateAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateAttachable(string name, Vector3 position)
         {
             GameObject target = new(name);

@@ -6,8 +6,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachProjectionRendererTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachProjectionRendererTests
     {
+        /// <summary>
+        /// <c>GetCastOrigin_StartsBeyondBoundsInDirection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void GetCastOrigin_StartsBeyondBoundsInDirection()
         {
@@ -21,6 +27,9 @@ namespace Phyzzle.Tests
             Assert.That(Vector3.Dot(origin - bounds.center, direction), Is.GreaterThan(support));
         }
 
+        /// <summary>
+        /// <c>ResolvePlanarForward_VerticalCameraUsesFallback</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ResolvePlanarForward_VerticalCameraUsesFallback()
         {
@@ -29,6 +38,9 @@ namespace Phyzzle.Tests
             Assert.That(result, Is.EqualTo(Vector3.forward));
         }
 
+        /// <summary>
+        /// <c>ProjectPoint_PlacesPointOnReceiverPlane</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ProjectPoint_PlacesPointOnReceiverPlane()
         {
@@ -40,6 +52,9 @@ namespace Phyzzle.Tests
             Assert.That(projected.y, Is.Zero.Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>TryGetProjectionPlane_RejectsParallelReceiver</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TryGetProjectionPlane_RejectsParallelReceiver()
         {
@@ -55,6 +70,9 @@ namespace Phyzzle.Tests
             Assert.That(result, Is.False);
         }
 
+        /// <summary>
+        /// <c>SetIsland_RetainsMeshFiltersFromEveryMember</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SetIsland_RetainsMeshFiltersFromEveryMember()
         {
@@ -84,6 +102,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ProjectBounds_ContainsEveryProjectedSourceCorner</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ProjectBounds_ContainsEveryProjectedSourceCorner()
         {
@@ -113,6 +134,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ReceiverSurface_FadesInAndOutWhenTheRayLosesItsReceiver</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ReceiverSurface_FadesInAndOutWhenTheRayLosesItsReceiver()
         {
@@ -139,6 +163,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>ReceiverSurface_FollowsMovingReceiverAndImmediatelyClearsDestroyedReceiver</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ReceiverSurface_FollowsMovingReceiverAndImmediatelyClearsDestroyedReceiver()
         {
@@ -172,6 +199,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Submit_CrossfadesDifferentReceiversAndProjectsOntoTheCeiling</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Submit_CrossfadesDifferentReceiversAndProjectsOntoTheCeiling()
         {
@@ -240,6 +270,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>HitTop</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static RaycastHit HitTop(Collider receiver)
         {
             Ray ray = new(receiver.bounds.center + Vector3.up * 4f, Vector3.down);
@@ -247,6 +280,9 @@ namespace Phyzzle.Tests
             return hit;
         }
 
+        /// <summary>
+        /// <c>GetSurfaces</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static AttachProjectionRenderer.ReceiverSurface[] GetSurfaces(
             AttachProjectionRenderer projection, string fieldName)
         {

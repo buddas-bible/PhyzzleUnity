@@ -14,6 +14,9 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachVisualAssetBuilderTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachVisualAssetBuilderTests
     {
         private const string TempRoot =
@@ -29,6 +32,9 @@ namespace Phyzzle.Tests
 
         private UniversalRendererData rendererData;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -48,6 +54,9 @@ namespace Phyzzle.Tests
             AssetDatabase.SaveAssets();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [TearDown]
         public void TearDown()
         {
@@ -62,6 +71,9 @@ namespace Phyzzle.Tests
             AssetDatabase.Refresh();
         }
 
+        /// <summary>
+        /// <c>EnsureMaterials_ReusesAllVisualMaterialsWithRequiredShaders</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureMaterials_ReusesAllVisualMaterialsWithRequiredShaders()
         {
@@ -86,6 +98,9 @@ namespace Phyzzle.Tests
                 Is.EquivalentTo(firstGuids));
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_ReusesOneAttachAfterLastRewindAndPreservesNeighbors</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_ReusesOneAttachAfterLastRewindAndPreservesNeighbors()
         {
@@ -124,6 +139,9 @@ namespace Phyzzle.Tests
             AssertRendererFeatureMapMatchesPersistentIds(reloaded);
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_ReconfiguresTheExistingAttachFeature</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_ReconfiguresTheExistingAttachFeature()
         {
@@ -145,6 +163,9 @@ namespace Phyzzle.Tests
             AssertRendererFeatureMapMatchesPersistentIds(rendererData);
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_RejectsNullRendererData</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_RejectsNullRendererData()
         {
@@ -156,6 +177,9 @@ namespace Phyzzle.Tests
             Assert.That(exception.ParamName, Is.EqualTo("rendererData"));
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_RejectsDuplicateAttachFeaturesWithoutDeletingThem</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_RejectsDuplicateAttachFeaturesWithoutDeletingThem()
         {
@@ -174,6 +198,9 @@ namespace Phyzzle.Tests
                 Has.Length.EqualTo(2));
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_RejectsNonPersistentExistingFeatureBeforeMutation</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_RejectsNonPersistentExistingFeatureBeforeMutation()
         {
@@ -211,6 +238,9 @@ namespace Phyzzle.Tests
             AssertRendererFeatureMapMatchesPersistentIds(rendererData);
         }
 
+        /// <summary>
+        /// <c>EnsureRendererFeature_MigratesV2FixtureWithoutChangingSupportedSettings</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsureRendererFeature_MigratesV2FixtureWithoutChangingSupportedSettings()
         {
@@ -258,6 +288,9 @@ namespace Phyzzle.Tests
             AssertRendererFeatureMapMatchesPersistentIds(reloaded);
         }
 
+        /// <summary>
+        /// <c>CreateSandbox_PersistsAttachVisualReferencesAcrossReload</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CreateSandbox_PersistsAttachVisualReferencesAcrossReload()
         {
@@ -291,6 +324,9 @@ namespace Phyzzle.Tests
                 "camera", "attachmentService", "material", "settings", "supportedPipeline");
         }
 
+        /// <summary>
+        /// <c>PcRenderer_PreservesFeatureOrderAndPersistentFeatureMap</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void PcRenderer_PreservesFeatureOrderAndPersistentFeatureMap()
         {
@@ -313,6 +349,9 @@ namespace Phyzzle.Tests
             AssertRendererFeatureMapMatchesPersistentIds(pcRenderer);
         }
 
+        /// <summary>
+        /// <c>EnsurePcRendererFeature_PreservesExistingFeatureSemanticsAcrossSaveReload</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void EnsurePcRendererFeature_PreservesExistingFeatureSemanticsAcrossSaveReload()
         {
@@ -359,6 +398,9 @@ namespace Phyzzle.Tests
             return feature;
         }
 
+        /// <summary>
+        /// <c>AssertRendererFeatureMapMatchesPersistentIds</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertRendererFeatureMapMatchesPersistentIds(UniversalRendererData data)
         {
             SerializedObject serialized = new(data);
@@ -373,6 +415,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>GetRendererFeatureMap</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static long[] GetRendererFeatureMap(UniversalRendererData data)
         {
             SerializedProperty map = new SerializedObject(data).FindProperty("m_RendererFeatureMap");
@@ -385,11 +430,17 @@ namespace Phyzzle.Tests
             return values;
         }
 
+        /// <summary>
+        /// <c>GetLayerMaskBits</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static int GetLayerMaskBits(SerializedObject serialized, string propertyName)
         {
             return serialized.FindProperty(propertyName).FindPropertyRelative("m_Bits").intValue;
         }
 
+        /// <summary>
+        /// <c>SnapshotRendererSettings</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static RendererSettingSnapshot[] SnapshotRendererSettings(UniversalRendererData data)
         {
             SerializedObject serialized = new(data);
@@ -411,6 +462,9 @@ namespace Phyzzle.Tests
             return snapshots.ToArray();
         }
 
+        /// <summary>
+        /// <c>IsIgnoredRendererProperty</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static bool IsIgnoredRendererProperty(string path)
         {
             return path == "m_Script" || path == "m_Name" ||
@@ -421,6 +475,9 @@ namespace Phyzzle.Tests
                    path.StartsWith("m_RendererFeatureMap");
         }
 
+        /// <summary>
+        /// <c>GetPropertyValue</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static string GetPropertyValue(SerializedProperty property)
         {
             return property.propertyType switch
@@ -444,6 +501,9 @@ namespace Phyzzle.Tests
             };
         }
 
+        /// <summary>
+        /// <c>GetObjectIdentity</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static string GetObjectIdentity(UnityEngine.Object value)
         {
             if (value == null)
@@ -456,6 +516,9 @@ namespace Phyzzle.Tests
                 : value.GetType().FullName + ":" + value.name;
         }
 
+        /// <summary>
+        /// <c>AssertRendererSettingsEqual</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertRendererSettingsEqual(
             RendererSettingSnapshot[] expected,
             RendererSettingSnapshot[] actual)
@@ -469,6 +532,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>AssertFeatureSnapshotsEqual</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertFeatureSnapshotsEqual(
             FeatureSnapshot[] expected,
             FeatureSnapshot[] actual)
@@ -483,6 +549,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>AssertSerializedReferencesArePresent</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertSerializedReferencesArePresent(
             SerializedObject serialized,
             params string[] propertyNames)
@@ -496,6 +565,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>Snapshot</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static FeatureSnapshot Snapshot(ScriptableRendererFeature feature)
         {
             return new FeatureSnapshot(
@@ -505,6 +577,9 @@ namespace Phyzzle.Tests
                 EditorJsonUtility.ToJson(feature));
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>FeatureSnapshot</c> 보조 타입이다.
+        /// </summary>
         private readonly struct FeatureSnapshot
         {
             internal FeatureSnapshot(string typeName, string name, bool active, string serializedJson)
@@ -521,6 +596,9 @@ namespace Phyzzle.Tests
             internal string SerializedJson { get; }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>RendererSettingSnapshot</c> 보조 타입이다.
+        /// </summary>
         private readonly struct RendererSettingSnapshot
         {
             internal RendererSettingSnapshot(
@@ -538,6 +616,9 @@ namespace Phyzzle.Tests
             internal string Value { get; }
         }
 
+        /// <summary>
+        /// <c>EnsureFolder</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void EnsureFolder(string parent, string child)
         {
             string path = parent + "/" + child;

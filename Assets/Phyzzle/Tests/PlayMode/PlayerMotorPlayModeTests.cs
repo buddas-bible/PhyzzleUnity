@@ -9,6 +9,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerMotorPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerMotorPlayModeTests
     {
         private readonly List<GameObject> extraObjects = new();
@@ -20,6 +23,9 @@ namespace Phyzzle.Tests
         private PlayerMotor motor;
         private Rigidbody body;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnitySetUp]
         public IEnumerator SetUp()
         {
@@ -69,6 +75,9 @@ namespace Phyzzle.Tests
             Assert.That(motor.IsOnStandableSlope, Is.True);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -91,6 +100,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>TickFixed_ForwardInputMovesAlongCameraForward</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_ForwardInputMovesAlongCameraForward()
         {
@@ -106,6 +118,9 @@ namespace Phyzzle.Tests
             Assert.That(motor.IsMoving, Is.True);
         }
 
+        /// <summary>
+        /// <c>TickFixed_GroundedInputRelease_StopsHorizontalLocomotionWithinOnePhysicsStep</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_GroundedInputRelease_StopsHorizontalLocomotionWithinOnePhysicsStep()
         {
@@ -119,6 +134,9 @@ namespace Phyzzle.Tests
             Assert.That(horizontalVelocity.magnitude, Is.LessThan(0.05f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_AirborneNoInput_DecaysExistingHorizontalVelocity_Baseline</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AirborneNoInput_DecaysExistingHorizontalVelocity_Baseline()
         {
@@ -140,6 +158,9 @@ namespace Phyzzle.Tests
             Assert.That(actualSpeed, Is.EqualTo(expectedSpeed).Within(0.15f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_AirborneForwardInput_AcceleratesTowardMoveSpeed_Baseline</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AirborneForwardInput_AcceleratesTowardMoveSpeed_Baseline()
         {
@@ -161,6 +182,9 @@ namespace Phyzzle.Tests
             Assert.That(actualSpeed, Is.EqualTo(expectedSpeed).Within(0.15f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_FlyingNoInput_PreservesMoreHorizontalVelocityThanNormalAir_Baseline</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_FlyingNoInput_PreservesMoreHorizontalVelocityThanNormalAir_Baseline()
         {
@@ -194,6 +218,9 @@ namespace Phyzzle.Tests
             Assert.That(flyingSpeed, Is.EqualTo(10f).Within(0.1f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_MovementFacingDisabled_MovesWithoutRotatingModel</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_MovementFacingDisabled_MovesWithoutRotatingModel()
         {
@@ -214,6 +241,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_MovementFacingReenabled_FacesMovementVelocity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_MovementFacingReenabled_FacesMovementVelocity()
         {
@@ -229,6 +259,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_JumpAddsUpwardVelocity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_JumpAddsUpwardVelocity()
         {
@@ -238,6 +271,9 @@ namespace Phyzzle.Tests
             Assert.That(body.linearVelocity.y, Is.GreaterThan(0f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_AfterSettlingOnFlatGround_AllowsJump</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AfterSettlingOnFlatGround_AllowsJump()
         {
@@ -260,6 +296,9 @@ namespace Phyzzle.Tests
             Assert.That(body.linearVelocity.y, Is.GreaterThan(0f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_TranslatingRecalledPlatform_CarriesPlayer</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_TranslatingRecalledPlatform_CarriesPlayer()
         {
@@ -309,6 +348,9 @@ namespace Phyzzle.Tests
                 $"platformDeltaZ={platformWorldDisplacement}; localX={initialLocalX}->{finalLocalX}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_RotatingRecalledPlatform_CarriesOffCenterPlayerTangentially</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_RotatingRecalledPlatform_CarriesOffCenterPlayerTangentially()
         {
@@ -368,6 +410,9 @@ namespace Phyzzle.Tests
             Assert.That(tangentialDisplacement, Is.GreaterThan(0.1f));
         }
 
+        /// <summary>
+        /// <c>PrepareAirborne</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private IEnumerator PrepareAirborne(Vector3 initialVelocity)
         {
             PlayerGroundSensor sensor = playerObject.GetComponentInChildren<PlayerGroundSensor>();
@@ -388,6 +433,9 @@ namespace Phyzzle.Tests
             body.linearVelocity = initialVelocity;
         }
 
+        /// <summary>
+        /// <c>SetFlyingTimeRemaining</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SetFlyingTimeRemaining(float seconds)
         {
             FieldInfo field = typeof(PlayerMotor).GetField(
@@ -398,6 +446,9 @@ namespace Phyzzle.Tests
             field.SetValue(motor, seconds);
         }
 
+        /// <summary>
+        /// <c>CreateZeroFrictionMaterial</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private PhysicsMaterial CreateZeroFrictionMaterial()
         {
             PhysicsMaterial material = new("Zero Friction")
@@ -410,6 +461,9 @@ namespace Phyzzle.Tests
             return material;
         }
 
+        /// <summary>
+        /// <c>CreateRecalledPlatform</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private GameObject CreateRecalledPlatform(
             PhysicsMaterial material,
             out Rigidbody platformBody,

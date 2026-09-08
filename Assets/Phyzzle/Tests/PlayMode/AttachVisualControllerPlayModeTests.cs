@@ -9,6 +9,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachVisualControllerPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachVisualControllerPlayModeTests
     {
         private GameObject playerObject;
@@ -35,6 +38,9 @@ namespace Phyzzle.Tests
         private RenderPipelineAsset originalQualityPipeline;
         private bool pipelineOverridden;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -85,6 +91,9 @@ namespace Phyzzle.Tests
             Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -119,6 +128,9 @@ namespace Phyzzle.Tests
             yield return null;
         }
 
+        /// <summary>
+        /// <c>ContactPreview_TracksContactAndClearsImmediatelyOnAttachReleaseOrDisable</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ContactPreview_TracksContactAndClearsImmediatelyOnAttachReleaseOrDisable()
         {
@@ -167,6 +179,9 @@ namespace Phyzzle.Tests
             Assert.That(contactPreview.LastSubmittedDrawCount, Is.Zero, "Unsupported pipelines must not draw the preview.");
         }
 
+        /// <summary>
+        /// <c>HoldingTether_FadesOnReleaseAndClearsOnRetargetOrDisable</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void HoldingTether_FadesOnReleaseAndClearsOnRetargetOrDisable()
         {
@@ -207,6 +222,9 @@ namespace Phyzzle.Tests
             Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>Selecting_AssignsFocusedOverEligibleAndPreservesUnrelatedBits</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Selecting_AssignsFocusedOverEligibleAndPreservesUnrelatedBits()
         {
@@ -223,6 +241,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(unrelated | AttachVisualLayers.Eligible));
         }
 
+        /// <summary>
+        /// <c>Holding_AssignsHeldToEveryIslandRendererAndClearsSelectionRoles</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Holding_AssignsHeldToEveryIslandRendererAndClearsSelectionRoles()
         {
@@ -239,6 +260,9 @@ namespace Phyzzle.Tests
             AssertRole(GetChildRenderer(secondObject), AttachVisualLayers.Held);
         }
 
+        /// <summary>
+        /// <c>ExitFade_UsesUnscaledDeltaThenClearsOwnedBits</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ExitFade_UsesUnscaledDeltaThenClearsOwnedBits()
         {
@@ -255,6 +279,9 @@ namespace Phyzzle.Tests
             AssertRole(firstObject.GetComponent<Renderer>(), 0u);
         }
 
+        /// <summary>
+        /// <c>Disable_HardCleansGlobalsLayersAndProjection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Disable_HardCleansGlobalsLayersAndProjection()
         {
@@ -269,6 +296,9 @@ namespace Phyzzle.Tests
             Assert.That(GetProjectionMeshFilters().Count, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>VisualTick_DoesNotChangePhysicsMaterialsTransformsOrAttachState</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void VisualTick_DoesNotChangePhysicsMaterialsTransformsOrAttachState()
         {
@@ -293,6 +323,9 @@ namespace Phyzzle.Tests
             AssertVisualSnapshotUnchanged(exit);
         }
 
+        /// <summary>
+        /// <c>Retargeting_ReplacesFocusedRoleInSameTick</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Retargeting_ReplacesFocusedRoleInSameTick()
         {
@@ -306,6 +339,9 @@ namespace Phyzzle.Tests
             AssertRole(secondObject.GetComponent<Renderer>(), AttachVisualLayers.Focused);
         }
 
+        /// <summary>
+        /// <c>IslandGrowth_AddsHeldRoleOnNextTick</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void IslandGrowth_AddsHeldRoleOnNextTick()
         {
@@ -319,6 +355,9 @@ namespace Phyzzle.Tests
             AssertRole(secondObject.GetComponent<Renderer>(), AttachVisualLayers.Held);
         }
 
+        /// <summary>
+        /// <c>HoldingSteadyState_RefreshesIslandOnlyWhenTopologyChanges</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void HoldingSteadyState_RefreshesIslandOnlyWhenTopologyChanges()
         {
@@ -339,6 +378,9 @@ namespace Phyzzle.Tests
             AssertRole(secondObject.GetComponent<Renderer>(), AttachVisualLayers.Held);
         }
 
+        /// <summary>
+        /// <c>MobilePipeline_HardCleansSelectingAndHoldingThenPcPipelineRecovers</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator MobilePipeline_HardCleansSelectingAndHoldingThenPcPipelineRecovers()
         {
@@ -391,6 +433,9 @@ namespace Phyzzle.Tests
             AssertRole(firstObject.GetComponent<Renderer>(), AttachVisualLayers.Held);
         }
 
+        /// <summary>
+        /// <c>DestroyedHeldRoot_HardCleansVisuals</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator DestroyedHeldRoot_HardCleansVisuals()
         {
@@ -407,6 +452,9 @@ namespace Phyzzle.Tests
             Assert.That(GetProjectionMeshFilters().Count, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>DestroyedHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void DestroyedHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately()
         {
@@ -426,6 +474,9 @@ namespace Phyzzle.Tests
             Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>InactiveHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void InactiveHeldRootDuringFade_HardCleansTheSurvivingIslandImmediately()
         {
@@ -445,6 +496,9 @@ namespace Phyzzle.Tests
             Assert.That(projection.LastSubmittedDrawCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>SkinnedRenderer_IsHighlightedButNeverAddedToProjectionMeshes</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void SkinnedRenderer_IsHighlightedButNeverAddedToProjectionMeshes()
         {
@@ -467,6 +521,9 @@ namespace Phyzzle.Tests
                 "Submit resets the sentinel, then safely returns because a skinned-only island has no MeshFilter source.");
         }
 
+        /// <summary>
+        /// <c>TopologyVersion_ChangesOnlyForGraphMutations</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TopologyVersion_ChangesOnlyForGraphMutations()
         {
@@ -503,6 +560,9 @@ namespace Phyzzle.Tests
             Assert.That(service.TopologyVersion, Is.EqualTo(++version));
         }
 
+        /// <summary>
+        /// <c>CreateAttachableCube</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateAttachableCube(string name, Vector3 position, out GameObject target)
         {
             target = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -520,12 +580,18 @@ namespace Phyzzle.Tests
             return attachable;
         }
 
+        /// <summary>
+        /// <c>GetChildRenderer</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Renderer GetChildRenderer(GameObject target)
         {
             Renderer[] renderers = target.GetComponentsInChildren<Renderer>(true);
             return renderers[1];
         }
 
+        /// <summary>
+        /// <c>CreateSkinnedAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateSkinnedAttachable(Mesh mesh, out SkinnedMeshRenderer skinned)
         {
             GameObject target = new("Skinned Only");
@@ -539,6 +605,9 @@ namespace Phyzzle.Tests
             return attachable;
         }
 
+        /// <summary>
+        /// <c>CreateProjectionCamera</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private Camera CreateProjectionCamera()
         {
             GameObject cameraObject = new("Projection Camera");
@@ -546,6 +615,9 @@ namespace Phyzzle.Tests
             return cameraObject.AddComponent<Camera>();
         }
 
+        /// <summary>
+        /// <c>CreateInactiveAttachable</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private AttachableObject CreateInactiveAttachable(string name)
         {
             GameObject target = new(name);
@@ -555,6 +627,9 @@ namespace Phyzzle.Tests
             return target.AddComponent<AttachableObject>();
         }
 
+        /// <summary>
+        /// <c>FindProjectionTestShader</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Shader FindProjectionTestShader()
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
@@ -567,12 +642,18 @@ namespace Phyzzle.Tests
             return shader;
         }
 
+        /// <summary>
+        /// <c>EnterSelecting</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void EnterSelecting(AttachableObject current, params AttachableObject[] nearby)
         {
             ability.EnterSelecting();
             SetTargets(current, nearby);
         }
 
+        /// <summary>
+        /// <c>SetTargets</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SetTargets(AttachableObject current, params AttachableObject[] nearby)
         {
             FieldInfo nearbyField = typeof(AttachTargeting).GetField("nearby",
@@ -587,6 +668,9 @@ namespace Phyzzle.Tests
             currentField.SetValue(targeting, current);
         }
 
+        /// <summary>
+        /// <c>GetProjectionMeshFilters</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private List<MeshFilter> GetProjectionMeshFilters()
         {
             FieldInfo field = typeof(AttachProjectionRenderer).GetField("meshFilters",
@@ -595,6 +679,9 @@ namespace Phyzzle.Tests
             return (List<MeshFilter>)field.GetValue(projection);
         }
 
+        /// <summary>
+        /// <c>GetProjectionRenderers</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private List<Renderer> GetProjectionRenderers()
         {
             FieldInfo field = typeof(AttachProjectionRenderer).GetField("renderers",
@@ -603,6 +690,9 @@ namespace Phyzzle.Tests
             return (List<Renderer>)field.GetValue(projection);
         }
 
+        /// <summary>
+        /// <c>SetLastSubmittedDrawCount</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SetLastSubmittedDrawCount(int value)
         {
             FieldInfo field = typeof(AttachProjectionRenderer).GetField("<LastSubmittedDrawCount>k__BackingField",
@@ -611,22 +701,34 @@ namespace Phyzzle.Tests
             field.SetValue(projection, value);
         }
 
+        /// <summary>
+        /// <c>CaptureVisualSnapshot</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private VisualSnapshot CaptureVisualSnapshot(AttachAbilityController.AbilityState state)
         {
             return new VisualSnapshot(first, second, state);
         }
 
+        /// <summary>
+        /// <c>AssertVisualSnapshotUnchanged</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void AssertVisualSnapshotUnchanged(VisualSnapshot snapshot)
         {
             Assert.That(ability.State, Is.EqualTo(snapshot.State));
             snapshot.AssertUnchanged();
         }
 
+        /// <summary>
+        /// <c>AssertRole</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static void AssertRole(Renderer renderer, uint expectedRole)
         {
             Assert.That(renderer.renderingLayerMask & AttachVisualLayers.Owned, Is.EqualTo(expectedRole));
         }
 
+        /// <summary>
+        /// <c>AssertVisualsHardClean</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void AssertVisualsHardClean()
         {
             AssertRole(firstObject.GetComponent<Renderer>(), 0u);
@@ -638,6 +740,9 @@ namespace Phyzzle.Tests
             Assert.That(tether.LastSubmittedDrawCount, Is.Zero);
         }
 
+        /// <summary>
+        /// <c>LoadPipelineAsset</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static RenderPipelineAsset LoadPipelineAsset(string path)
         {
             System.Type assetDatabase = System.Type.GetType("UnityEditor.AssetDatabase, UnityEditor");
@@ -647,6 +752,9 @@ namespace Phyzzle.Tests
             return loadMainAsset.Invoke(null, new object[] { path }) as RenderPipelineAsset;
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>VisualSnapshot</c> 보조 타입이다.
+        /// </summary>
         private sealed class VisualSnapshot
         {
             private readonly RigidbodySnapshot[] bodies;
@@ -685,6 +793,9 @@ namespace Phyzzle.Tests
 
             internal AttachAbilityController.AbilityState State { get; }
 
+            /// <summary>
+            /// <c>AssertUnchanged</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void AssertUnchanged()
             {
                 for (int i = 0; i < bodies.Length; i++)
@@ -704,6 +815,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>RigidbodySnapshot</c> 보조 타입이다.
+        /// </summary>
         private readonly struct RigidbodySnapshot
         {
             private readonly Rigidbody body;
@@ -739,6 +853,9 @@ namespace Phyzzle.Tests
                 detectCollisions = source.detectCollisions;
             }
 
+            /// <summary>
+            /// <c>AssertUnchanged</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void AssertUnchanged()
             {
                 Assert.That(body.mass, Is.EqualTo(mass));
@@ -757,6 +874,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>RendererSnapshot</c> 보조 타입이다.
+        /// </summary>
         private readonly struct RendererSnapshot
         {
             private readonly Renderer renderer;
@@ -776,6 +896,9 @@ namespace Phyzzle.Tests
                 materials = source.sharedMaterials;
             }
 
+            /// <summary>
+            /// <c>AssertUnchanged</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void AssertUnchanged()
             {
                 Assert.That(renderer.transform.position, Is.EqualTo(position));
@@ -791,6 +914,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// 테스트에서 사용하는 <c>ColliderSnapshot</c> 보조 타입이다.
+        /// </summary>
         private readonly struct ColliderSnapshot
         {
             private readonly Collider collider;
@@ -802,6 +928,9 @@ namespace Phyzzle.Tests
                 material = source.sharedMaterial;
             }
 
+            /// <summary>
+            /// <c>AssertUnchanged</c> 테스트 지원 동작을 수행한다.
+            /// </summary>
             internal void AssertUnchanged()
             {
                 Assert.That(collider.sharedMaterial, Is.SameAs(material));

@@ -5,8 +5,14 @@ using UnityEngine.TestTools.Utils;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>PlayerMovementMathTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class PlayerMovementMathTests
     {
+        /// <summary>
+        /// <c>CameraRelativeDirection_UsesFlattenedCameraAxes</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CameraRelativeDirection_UsesFlattenedCameraAxes()
         {
@@ -18,6 +24,9 @@ namespace Phyzzle.Tests
             Assert.That(result.normalized, Is.EqualTo(new Vector3(1f, 0f, 1f).normalized).Using(Vector3ComparerWithEqualsOperator.Instance));
         }
 
+        /// <summary>
+        /// <c>ProjectDirectionOnSlope_IsTangentToGround</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ProjectDirectionOnSlope_IsTangentToGround()
         {
@@ -30,6 +39,9 @@ namespace Phyzzle.Tests
             Assert.That(Vector3.Dot(result.normalized, normal), Is.EqualTo(0f).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>ClampVerticalSpeed_PreservesHorizontalVelocity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ClampVerticalSpeed_PreservesHorizontalVelocity()
         {

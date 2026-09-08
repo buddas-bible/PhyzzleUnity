@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindVelocityServoTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindVelocityServoTests
     {
+        /// <summary>
+        /// <c>Calculate_UsesShortestQuaternionArc</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Calculate_UsesShortestQuaternionArc()
         {
@@ -16,6 +22,9 @@ namespace Phyzzle.Tests
             Assert.That(drive.AngularVelocity.y, Is.EqualTo(-Mathf.Deg2Rad * 10f / 0.02f).Within(0.001f));
         }
 
+        /// <summary>
+        /// <c>Calculate_ClampsLinearAndAngularVelocity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Calculate_ClampsLinearAndAngularVelocity()
         {
@@ -27,6 +36,9 @@ namespace Phyzzle.Tests
             Assert.That(drive.AngularVelocity.magnitude, Is.EqualTo(90f * Mathf.Deg2Rad).Within(0.0001f));
         }
 
+        /// <summary>
+        /// <c>Calculate_UsesPositionErrorPerFixedDeltaForUncappedLinearVelocity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Calculate_UsesPositionErrorPerFixedDeltaForUncappedLinearVelocity()
         {
@@ -37,6 +49,9 @@ namespace Phyzzle.Tests
             Assert.That(drive.LinearVelocity, Is.EqualTo(new Vector3(20f, -10f, 5f)));
         }
 
+        /// <summary>
+        /// <c>Calculate_NonPositiveFixedDeltaTime_ReturnsZeroVelocities</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Calculate_NonPositiveFixedDeltaTime_ReturnsZeroVelocities()
         {
@@ -48,6 +63,9 @@ namespace Phyzzle.Tests
             Assert.That(drive.AngularVelocity, Is.EqualTo(Vector3.zero));
         }
 
+        /// <summary>
+        /// <c>Calculate_NegativeFixedDeltaTime_ReturnsZeroVelocities</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Calculate_NegativeFixedDeltaTime_ReturnsZeroVelocities()
         {

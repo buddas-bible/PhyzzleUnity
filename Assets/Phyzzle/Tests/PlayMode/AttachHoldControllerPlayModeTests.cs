@@ -10,6 +10,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>AttachHoldControllerPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class AttachHoldControllerPlayModeTests
     {
         private GameObject playerObject;
@@ -28,6 +31,9 @@ namespace Phyzzle.Tests
         private Gamepad gamepad;
         private readonly InputTestFixture inputFixture = new();
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -68,6 +74,9 @@ namespace Phyzzle.Tests
             Physics.SyncTransforms();
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -82,6 +91,9 @@ namespace Phyzzle.Tests
             inputFixture.TearDown();
         }
 
+        /// <summary>
+        /// <c>Begin_OffAxisTarget_SnapsAndClassifiesPostFacingLocalPose</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Begin_OffAxisTarget_SnapsAndClassifiesPostFacingLocalPose()
         {
@@ -97,6 +109,9 @@ namespace Phyzzle.Tests
                 Quaternion.Euler(45f, 0f, 0f)), Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_RotateHeldStepsInCppDirection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(GamepadButton.DpadUp, (int)AttachRotationPoseType.RotateX, 45f, 1f, 0f)]
         [TestCase(GamepadButton.DpadDown, (int)AttachRotationPoseType.RotateX, -45f, 1f, 0f)]
         [TestCase(GamepadButton.DpadLeft, (int)AttachRotationPoseType.RotateY, 45f, 0f, 1f)]
@@ -122,6 +137,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_RotateHeldDiagonal_ProcessesVerticalBeforeHorizontal</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_RotateHeldDiagonal_ProcessesVerticalBeforeHorizontal()
         {
@@ -138,6 +156,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(ReadTargetRotation(controller), expected), Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_SpecialPoseUp_AppliesSixOperationCppTransition</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_SpecialPoseUp_AppliesSixOperationCppTransition()
         {
@@ -158,6 +179,9 @@ namespace Phyzzle.Tests
                 ApplyLiteralOperations(start, "Y+ X+ Y- Y- X+ Y+", 45f)), Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_LeftTriggerSuppressesStepAndOnlyFineAdjustsWithoutReclassification</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_LeftTriggerSuppressesStepAndOnlyFineAdjustsWithoutReclassification()
         {
@@ -178,6 +202,9 @@ namespace Phyzzle.Tests
             Assert.That(Quaternion.Angle(ReadTargetRotation(controller), expected), Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_LeftTriggerDepth_ExcludesOneShotDepthStep</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_LeftTriggerDepth_ExcludesOneShotDepthStep()
         {
@@ -193,6 +220,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(initialDepth + 1f).Within(0.001f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_ZeroLeftTriggerDepth_StepsOnceWithoutRepeatingWhileHeld</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_ZeroLeftTriggerDepth_StepsOnceWithoutRepeatingWhileHeld()
         {
@@ -214,6 +244,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(initialDepth + settings.targetDepthStep).Within(0.001f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_LargeMouseDeltaRemainsUnclampedWhileHolding</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_LargeMouseDeltaRemainsUnclampedWhileHolding()
         {
@@ -231,6 +264,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(0.8f).Within(0.001f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_GamepadLookRemainsRateInputWhileHolding</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_GamepadLookRemainsRateInputWhileHolding()
         {
@@ -248,6 +284,9 @@ namespace Phyzzle.Tests
                 Is.EqualTo(initialHeight + 0.2f).Within(0.001f));
         }
 
+        /// <summary>
+        /// <c>Release_ResetsRotationPoseAndTarget</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Release_ResetsRotationPoseAndTarget()
         {
@@ -262,6 +301,9 @@ namespace Phyzzle.Tests
                 Is.LessThan(0.01f));
         }
 
+        /// <summary>
+        /// <c>BeginAndRelease_RestoresSelectedBodyProperties</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator BeginAndRelease_RestoresSelectedBodyProperties()
         {
@@ -284,6 +326,9 @@ namespace Phyzzle.Tests
             Assert.That(Vector3.Distance(targetBody.inertiaTensor, originalInertia), Is.LessThan(0.0001f));
         }
 
+        /// <summary>
+        /// <c>TickFixed_TransfersPlayerLinearVelocityToHeldBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_TransfersPlayerLinearVelocityToHeldBody()
         {
@@ -300,6 +345,9 @@ namespace Phyzzle.Tests
             Assert.That(targetBody.linearVelocity.x, Is.GreaterThan(0f));
         }
 
+        /// <summary>
+        /// <c>Begin_AttachedIslandBehindPlayer_PushesTargetBeyondMinimumZ</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Begin_AttachedIslandBehindPlayer_PushesTargetBeyondMinimumZ()
         {
@@ -316,6 +364,9 @@ namespace Phyzzle.Tests
             Assert.That(targetBody.linearVelocity.z, Is.GreaterThan(0f));
         }
 
+        /// <summary>
+        /// <c>TickUpdate_HeldRigidbodyDestroyed_SkipsFrameAndKeepsHolding</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickUpdate_HeldRigidbodyDestroyed_SkipsFrameAndKeepsHolding()
         {
@@ -341,6 +392,9 @@ namespace Phyzzle.Tests
             Assert.That(controller.IsHolding, Is.True);
         }
 
+        /// <summary>
+        /// <c>Begin_SingleLargeColliderExtentBehindMinimum_PushesTargetForward</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator Begin_SingleLargeColliderExtentBehindMinimum_PushesTargetForward()
         {
@@ -357,6 +411,9 @@ namespace Phyzzle.Tests
             Assert.That(targetBody.linearVelocity.z, Is.GreaterThan(0f));
         }
 
+        /// <summary>
+        /// <c>CreateAttachableCube</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private GameObject CreateAttachableCube(
             string name,
             Vector3 position,
@@ -372,12 +429,18 @@ namespace Phyzzle.Tests
             return created;
         }
 
+        /// <summary>
+        /// <c>CreateInput</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private PlayerInputReader CreateInput()
         {
             inputObject = new GameObject("Input");
             return inputObject.AddComponent<PlayerInputReader>();
         }
 
+        /// <summary>
+        /// <c>SetGamepadState</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void SetGamepadState(float leftTrigger, bool rotateHeld, params GamepadButton[] buttons)
         {
             if (rotateHeld)
@@ -393,6 +456,9 @@ namespace Phyzzle.Tests
             inputFixture.Set(gamepad.leftTrigger, leftTrigger);
         }
 
+        /// <summary>
+        /// <c>ReadSession</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static AttachHoldSession ReadSession(AttachHoldController source)
         {
             FieldInfo sessionField = typeof(AttachHoldController)
@@ -401,9 +467,15 @@ namespace Phyzzle.Tests
             return (AttachHoldSession)sessionField.GetValue(source);
         }
 
+        /// <summary>
+        /// <c>ReadTargetRotation</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Quaternion ReadTargetRotation(AttachHoldController source)
             => ReadSession(source).TargetLocalRotation;
 
+        /// <summary>
+        /// <c>ReadSessionPoseType</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static AttachRotationPoseType ReadSessionPoseType(AttachHoldController source)
         {
             PropertyInfo poseProperty = typeof(AttachHoldSession)
@@ -412,6 +484,9 @@ namespace Phyzzle.Tests
             return (AttachRotationPoseType)poseProperty.GetValue(ReadSession(source));
         }
 
+        /// <summary>
+        /// <c>ApplyLiteralOperations</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private static Quaternion ApplyLiteralOperations(
             Quaternion rotation,
             string operations,

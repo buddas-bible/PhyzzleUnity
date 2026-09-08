@@ -13,6 +13,9 @@ using UnityEngine.TestTools;
 
 namespace Phyzzle.Tests
 {
+    /// <summary>
+    /// <c>RewindCoordinatorPlayModeTests</c> 대상 동작을 검증하는 테스트 모음이다.
+    /// </summary>
     public sealed class RewindCoordinatorPlayModeTests
     {
         private readonly List<GameObject> extraObjects = new();
@@ -31,6 +34,9 @@ namespace Phyzzle.Tests
         private Gamepad gamepad;
         private float initialTimeScale;
 
+        /// <summary>
+        /// <c>SetUp</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [SetUp]
         public void SetUp()
         {
@@ -57,6 +63,9 @@ namespace Phyzzle.Tests
             recorder.Configure(settings, coordinator);
         }
 
+        /// <summary>
+        /// <c>TearDown</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         [UnityTearDown]
         public IEnumerator TearDown()
         {
@@ -81,6 +90,9 @@ namespace Phyzzle.Tests
             inputFixture.TearDown();
         }
 
+        /// <summary>
+        /// <c>StartRewind_KeepsDynamicBodyAndDisablesOnlyGravity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void StartRewind_KeepsDynamicBodyAndDisablesOnlyGravity()
         {
@@ -96,6 +108,9 @@ namespace Phyzzle.Tests
             Assert.That(body.angularVelocity, Is.EqualTo(Vector3.zero));
         }
 
+        /// <summary>
+        /// <c>EndRewind_ZerosVelocityAndRestoresOriginalGravity</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(true)]
         [TestCase(false)]
         public void EndRewind_ZerosVelocityAndRestoresOriginalGravity(bool initialUseGravity)
@@ -118,6 +133,9 @@ namespace Phyzzle.Tests
                 $"linearVelocity={body.linearVelocity}; angularVelocity={body.angularVelocity}");
         }
 
+        /// <summary>
+        /// <c>StartRewind_RejectsKinematicBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void StartRewind_RejectsKinematicBody()
         {
@@ -130,6 +148,9 @@ namespace Phyzzle.Tests
             Assert.That(body.useGravity, Is.True);
         }
 
+        /// <summary>
+        /// <c>CanRewindAndStartRewind_RejectInactiveRecorder</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void CanRewindAndStartRewind_RejectInactiveRecorder()
         {
@@ -144,6 +165,9 @@ namespace Phyzzle.Tests
             Assert.That(body.useGravity, Is.True);
         }
 
+        /// <summary>
+        /// <c>DisablingActiveRecorder_EndsRecallAndRestoresBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(true)]
         [TestCase(false)]
         public void DisablingActiveRecorder_EndsRecallAndRestoresBody(bool initialUseGravity)
@@ -163,6 +187,9 @@ namespace Phyzzle.Tests
             Assert.That(body.useGravity, Is.EqualTo(initialUseGravity));
         }
 
+        /// <summary>
+        /// <c>TickFixed_MissingSettingsEndsRecallAndRestoresLiveBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(true)]
         [TestCase(false)]
         public void TickFixed_MissingSettingsEndsRecallAndRestoresLiveBody(bool initialUseGravity)
@@ -183,6 +210,9 @@ namespace Phyzzle.Tests
             Assert.That(body.useGravity, Is.EqualTo(initialUseGravity));
         }
 
+        /// <summary>
+        /// <c>StartRewind_RejectsSecondTargetWhileOneIsActive</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void StartRewind_RejectsSecondTargetWhileOneIsActive()
         {
@@ -204,6 +234,9 @@ namespace Phyzzle.Tests
             Assert.That(secondRecorder.IsRewinding, Is.False);
         }
 
+        /// <summary>
+        /// <c>TickFixed_DestroyedRigidbodyClearsOwnershipWithoutThrowing</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_DestroyedRigidbodyClearsOwnershipWithoutThrowing()
         {
@@ -227,6 +260,9 @@ namespace Phyzzle.Tests
             Assert.That(coordinator.IsRewindingAny, Is.False);
         }
 
+        /// <summary>
+        /// <c>EndRewind_DestroyedTargetClearsOwnershipWithoutThrowing</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator EndRewind_DestroyedTargetClearsOwnershipWithoutThrowing()
         {
@@ -242,6 +278,9 @@ namespace Phyzzle.Tests
             Assert.That(coordinator.IsRewindingAny, Is.False);
         }
 
+        /// <summary>
+        /// <c>TickFixed_RotatedHistoryCommandsAngularVelocityBeforePhysicsRotatesBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_RotatedHistoryCommandsAngularVelocityBeforePhysicsRotatesBody()
         {
@@ -266,6 +305,9 @@ namespace Phyzzle.Tests
                 $"prePhysicsAngle=0; postPhysicsAngle={Quaternion.Angle(body.rotation, rotationBeforeTick)}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_UnobstructedBodyStaysDynamicAndReleasesAfterFinalPhysicsStep</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_UnobstructedBodyStaysDynamicAndReleasesAfterFinalPhysicsStep()
         {
@@ -301,6 +343,9 @@ namespace Phyzzle.Tests
                 $"positionAfter={body.position.x}; released={coordinator.IsRewindingAny == false}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_RecallReversesTargetWhileGameplayProbeKeepsUpdating</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_RecallReversesTargetWhileGameplayProbeKeepsUpdating()
         {
@@ -331,6 +376,9 @@ namespace Phyzzle.Tests
                 $"RecallDisplacement={body.position.x - positionBeforeRecall:R}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_StaticWallBlocksRecallWithoutTeleportCorrection</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_StaticWallBlocksRecallWithoutTeleportCorrection()
         {
@@ -377,6 +425,9 @@ namespace Phyzzle.Tests
                 $"postRemovalVelocityX={postRemovalVelocity}; postRemovalX={body.position.x}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_FixedJointMovesConnectedDynamicBodyWithoutRecallingIt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_FixedJointMovesConnectedDynamicBodyWithoutRecallingIt()
         {
@@ -420,6 +471,9 @@ namespace Phyzzle.Tests
                 $"connectedRewinding={coordinator.IsRewinding(connectedRecorder)}");
         }
 
+        /// <summary>
+        /// <c>TickFixed_AttachAuthoredRootRecallMovesConnectedMemberWithoutTargetingIt</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TickFixed_AttachAuthoredRootRecallMovesConnectedMemberWithoutTargetingIt()
         {
@@ -493,6 +547,9 @@ namespace Phyzzle.Tests
                 $"memberWasTarget={coordinator.Current == memberRecorder}");
         }
 
+        /// <summary>
+        /// <c>StartRewind_RejectsHistoryWithFewerThanTwoSnapshots</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void StartRewind_RejectsHistoryWithFewerThanTwoSnapshots()
         {
@@ -500,6 +557,9 @@ namespace Phyzzle.Tests
             Assert.That(coordinator.IsRewindingAny, Is.False);
         }
 
+        /// <summary>
+        /// <c>Targeting_FindsRecordedDynamicBodyAlongCameraRay</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void Targeting_FindsRecordedDynamicBodyAlongCameraRay()
         {
@@ -520,6 +580,9 @@ namespace Phyzzle.Tests
             Object.DestroyImmediate(armObject);
         }
 
+        /// <summary>
+        /// <c>AbilitySelection_PausesAndRestoresWorldTime</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void AbilitySelection_PausesAndRestoresWorldTime()
         {
@@ -542,6 +605,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>TryStartRewind_EntersRewindingAndReleasesSelectionPause</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [UnityTest]
         public IEnumerator TryStartRewind_EntersRewindingAndReleasesSelectionPause()
         {
@@ -613,6 +679,9 @@ namespace Phyzzle.Tests
             }
         }
 
+        /// <summary>
+        /// <c>TryStartRewind_FromDefaultWithTarget_ReturnsFalse</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TryStartRewind_FromDefaultWithTarget_ReturnsFalse()
         {
@@ -631,6 +700,9 @@ namespace Phyzzle.Tests
             Assert.That(Time.timeScale, Is.EqualTo(initialTimeScale));
         }
 
+        /// <summary>
+        /// <c>ReturnToDefault_WhileRewinding_ReleasesBodyAndRestoresState</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void ReturnToDefault_WhileRewinding_ReleasesBodyAndRestoresState()
         {
@@ -652,6 +724,9 @@ namespace Phyzzle.Tests
             Assert.That(Time.timeScale, Is.EqualTo(initialTimeScale));
         }
 
+        /// <summary>
+        /// <c>ConfirmInput_EntersRewinding</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(false, TestName = "ConfirmInput_KeyboardFEntersRewinding")]
         [TestCase(true, TestName = "ConfirmInput_GamepadEastEntersRewinding")]
         public void ConfirmInput_EntersRewinding(bool useGamepad)
@@ -669,6 +744,9 @@ namespace Phyzzle.Tests
             Assert.That(Time.timeScale, Is.EqualTo(initialTimeScale));
         }
 
+        /// <summary>
+        /// <c>CancelInput_EndsRewindAndRestoresBody</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [TestCase(false, TestName = "CancelInput_KeyboardQEndsRewindAndRestoresBody")]
         [TestCase(true, TestName = "CancelInput_GamepadLeftShoulderEndsRewindAndRestoresBody")]
         public void CancelInput_EndsRewindAndRestoresBody(bool useGamepad)
@@ -691,6 +769,9 @@ namespace Phyzzle.Tests
             Assert.That(body.useGravity, Is.True);
         }
 
+        /// <summary>
+        /// <c>TickUpdate_AfterCoordinatorCompletes_ReturnsToDefault</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_AfterCoordinatorCompletes_ReturnsToDefault()
         {
@@ -710,6 +791,9 @@ namespace Phyzzle.Tests
             "CompletionFrameCancel_KeyboardQIsConsumedAndDoesNotReopenSelection")]
         [TestCase(true, TestName =
             "CompletionFrameCancel_GamepadLeftShoulderIsConsumedAndDoesNotReopenSelection")]
+        /// <summary>
+        /// <c>CompletionFrameCancel_IsConsumedAndDoesNotReopenSelection</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         public void CompletionFrameCancel_IsConsumedAndDoesNotReopenSelection(bool useGamepad)
         {
             RewindAbilityController ability = CreateAbility();
@@ -734,6 +818,9 @@ namespace Phyzzle.Tests
             Assert.That(coordinator.IsRewindingAny, Is.False);
         }
 
+        /// <summary>
+        /// <c>TickUpdate_WhileRewinding_PreservesMovementJumpAndCameraInput</c> 테스트 시나리오를 검증한다.
+        /// </summary>
         [Test]
         public void TickUpdate_WhileRewinding_PreservesMovementJumpAndCameraInput()
         {
@@ -758,6 +845,9 @@ namespace Phyzzle.Tests
             Assert.That(ability.BlocksJump, Is.False);
         }
 
+        /// <summary>
+        /// <c>CreateAbility</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private RewindAbilityController CreateAbility(float cameraPositionLerpTime = 0.001f)
         {
             Capture(Vector3.zero, Quaternion.identity);
@@ -793,6 +883,9 @@ namespace Phyzzle.Tests
             return ability;
         }
 
+        /// <summary>
+        /// <c>QueueConfirm</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void QueueConfirm(bool useGamepad)
         {
             if (useGamepad)
@@ -810,6 +903,9 @@ namespace Phyzzle.Tests
             InputSystem.Update();
         }
 
+        /// <summary>
+        /// <c>QueueCancel</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void QueueCancel(bool useGamepad)
         {
             if (useGamepad)
@@ -827,6 +923,9 @@ namespace Phyzzle.Tests
             InputSystem.Update();
         }
 
+        /// <summary>
+        /// <c>Capture</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void Capture(Vector3 position, Quaternion rotation)
         {
             body.position = position;
@@ -835,25 +934,40 @@ namespace Phyzzle.Tests
         }
     }
 
+    /// <summary>
+    /// 테스트에서 사용하는 <c>RewindCollisionProbe</c> 보조 타입이다.
+    /// </summary>
     internal sealed class RewindCollisionProbe : MonoBehaviour
     {
         public int ContactCount { get; private set; }
 
+        /// <summary>
+        /// <c>OnCollisionEnter</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void OnCollisionEnter(Collision collision)
         {
             ContactCount += collision.contactCount;
         }
 
+        /// <summary>
+        /// <c>OnCollisionStay</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void OnCollisionStay(Collision collision)
         {
             ContactCount += collision.contactCount;
         }
     }
 
+    /// <summary>
+    /// 테스트에서 사용하는 <c>ForwardGameplayProbe</c> 보조 타입이다.
+    /// </summary>
     internal sealed class ForwardGameplayProbe : MonoBehaviour
     {
         public int FixedUpdateCount { get; private set; }
 
+        /// <summary>
+        /// <c>FixedUpdate</c> 테스트 지원 동작을 수행한다.
+        /// </summary>
         private void FixedUpdate()
         {
             FixedUpdateCount++;
