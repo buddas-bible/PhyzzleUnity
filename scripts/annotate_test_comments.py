@@ -99,7 +99,7 @@ def self_test() -> None:
     sample = """using NUnit.Framework;\n\nnamespace Sample\n{\n    public sealed class DemoTests\n    {\n        [Test]\n        public void Works()\n        {\n        }\n\n        private static int Helper(int value) => value;\n    }\n}\n"""
     annotated, inserted = annotate_text(sample)
     assert inserted == 9, inserted
-    assert "/// <c>DemoTests</c> 대상 동작을 검증하는 테스트 모음이다.\n    public sealed class DemoTests" in annotated
+    assert "/// <c>DemoTests</c> 대상 동작을 검증하는 테스트 모음이다.\n    /// </summary>\n    public sealed class DemoTests" in annotated
     assert "/// <c>Works</c> 테스트 시나리오를 검증한다.\n        /// </summary>\n        [Test]" in annotated
     assert "/// <c>Helper</c> 테스트 지원 동작을 수행한다.\n        /// </summary>\n        private static int Helper" in annotated
     second, inserted_again = annotate_text(annotated)
