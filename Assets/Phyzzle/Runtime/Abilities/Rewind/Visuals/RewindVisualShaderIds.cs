@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Phyzzle.Abilities.Rewind
 {
+    /// <summary>
+    /// 되감기 시각 효과가 공유하는 셰이더 프로퍼티 ID와 전역 기본값 초기화를 관리한다.
+    /// </summary>
     internal static class RewindVisualShaderIds
     {
         internal static readonly int SelectionBlend =
@@ -22,12 +25,18 @@ namespace Phyzzle.Abilities.Rewind
         internal static readonly int PreviewMaskWeight =
             Shader.PropertyToID("_RewindPreviewMaskWeight");
 
+        /// <summary>
+        /// Unity 서브시스템 재등록 시 되감기 전역 셰이더 값을 기본 상태로 초기화한다.
+        /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOnSubsystemRegistration()
         {
             ResetGlobals();
         }
 
+        /// <summary>
+        /// 되감기 선택 효과가 사용하는 모든 전역 셰이더 값을 비활성 기본값으로 복원한다.
+        /// </summary>
         internal static void ResetGlobals()
         {
             Shader.SetGlobalFloat(SelectionBlend, 0f);

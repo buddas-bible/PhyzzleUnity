@@ -8,10 +8,19 @@ using UnityEngine.Rendering.Universal;
 
 namespace Phyzzle.Abilities.Rewind
 {
+    /// <summary>
+    /// URP RenderGraph에서 되감기 선택 마스크를 만들고 화면 합성 효과를 적용하는 Renderer Feature다.
+    /// </summary>
     public sealed class RewindRenderFeature : ScriptableRendererFeature
     {
+        /// <summary>
+        /// 플레이어 보존, 선택 가능, 활성 대상 마스크와 후처리 합성을 기록하는 URP 렌더 패스다.
+        /// </summary>
         private sealed class RewindRenderPass : ScriptableRenderPass
         {
+            /// <summary>
+            /// 마스크 패스에서 사용할 렌더러 목록 핸들을 보관한다.
+            /// </summary>
             private sealed class MaskPassData
             {
                 internal RendererListHandle Player;
@@ -34,6 +43,9 @@ namespace Phyzzle.Abilities.Rewind
 
             internal bool HasIntermediateRequirement => requiresIntermediateTexture;
 
+            /// <summary>
+            /// 마스크와 합성 재질을 설정하고 중간 컬러 텍스처 사용을 요구한다.
+            /// </summary>
             internal void Setup(Material rewindMaskMaterial, Material rewindCompositeMaterial)
             {
                 maskMaterial = rewindMaskMaterial;
@@ -41,6 +53,9 @@ namespace Phyzzle.Abilities.Rewind
                 requiresIntermediateTexture = true;
             }
 
+            /// <summary>
+            /// 되감기 마스크 렌더 패스와 화면 합성 블릿 패스를 RenderGraph에 기록한다.
+            /// </summary>
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
                 UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
@@ -116,6 +131,9 @@ namespace Phyzzle.Abilities.Rewind
                 resourceData.cameraColor = destination;
             }
 
+            /// <summary>
+            /// 지정한 렌더링 레이어를 마스크 재질의 특정 패스로 그릴 RendererList를 생성한다.
+            /// </summary>
             private RendererListHandle CreateRendererList(
                 RenderGraph renderGraph,
                 ContextContainer frameData,
@@ -159,6 +177,9 @@ namespace Phyzzle.Abilities.Rewind
         internal Material MaskMaterial => maskMaterial;
         internal Material CompositeMaterial => compositeMaterial;
 
+        /// <summary>
+        /// Renderer Feature에서 사용할 마스크와 합성 재질을 구성한다.
+        /// </summary>
         public void Configure(Material rewindMaskMaterial, Material rewindCompositeMaterial)
         {
             maskMaterial = rewindMaskMaterial;
@@ -166,6 +187,9 @@ namespace Phyzzle.Abilities.Rewind
             pass?.Setup(maskMaterial, compositeMaterial);
         }
 
+        /// <summary>
+        /// 후처리 이후 실행될 되감기 렌더 패스를 생성하고 재질이 있으면 설정한다.
+        /// </summary>
         public override void Create()
         {
             pass = new RewindRenderPass
@@ -178,6 +202,9 @@ namespace Phyzzle.Abilities.Rewind
             }
         }
 
+        /// <summary>
+        /// 현재 카메라와 선택 블렌드 조건이 유효할 때 되감기 렌더 패스를 큐에 추가한다.
+        /// </summary>
         public override void AddRenderPasses(
             ScriptableRenderer renderer,
             ref RenderingData renderingData)
@@ -200,6 +227,9 @@ namespace Phyzzle.Abilities.Rewind
             renderer.EnqueuePass(pass);
         }
 
+        /// <summary>
+        /// 게임 Base 카메라에서 유효한 재질과 선택 블렌드가 있을 때만 패스를 실행하도록 판정한다.
+        /// </summary>
         internal static bool ShouldEnqueue(
             CameraType cameraType,
             CameraRenderType renderType,
@@ -210,6 +240,9 @@ namespace Phyzzle.Abilities.Rewind
                    cameraType == CameraType.Game && renderType == CameraRenderType.Base;
         }
 
+        /// <summary>
+        /// 지정한 URP RendererData에 활성화되고 완전히 구성된 되감기 렌더 피처가 있는지 확인한다.
+        /// </summary>
         internal static bool SupportsRendererData(ScriptableRendererData rendererData)
         {
             if (rendererData == null)
