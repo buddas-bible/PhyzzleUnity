@@ -10,6 +10,9 @@ using UnityEngine.SceneManagement;
 
 namespace Phyzzle.Editor
 {
+    /// <summary>
+    /// 마이그레이션된 플레이어, 능력, HUD와 테스트 오브젝트를 포함한 검증용 샌드박스 씬을 생성한다.
+    /// </summary>
     public static class PlayerSandboxBuilder
     {
         private const string RootFolder = "Assets/Phyzzle";
@@ -23,6 +26,9 @@ namespace Phyzzle.Editor
         private const string SelectedPhysicsMaterialPath = SettingsFolder + "/SelectedObjectPhysicsMaterial.asset";
         private const string ScenePath = ScenesFolder + "/PlayerMigrationSandbox.unity";
 
+        /// <summary>
+        /// 필요한 설정·VFX 자산을 준비하고 플레이어 기능 검증용 샌드박스 씬 전체를 새로 생성한다.
+        /// </summary>
         [MenuItem("Phyzzle/Migration/Create Player Sandbox")]
         public static void CreateSandbox()
         {
@@ -88,11 +94,17 @@ namespace Phyzzle.Editor
             Debug.Log($"Created Phyzzle player migration sandbox at {ScenePath}");
         }
 
+        /// <summary>
+        /// 배치 모드나 CI에서 동일한 샌드박스 생성을 호출할 수 있는 진입점을 제공한다.
+        /// </summary>
         public static void CreateSandboxFromCommandLine()
         {
             CreateSandbox();
         }
 
+        /// <summary>
+        /// 이동·경사 테스트용 지면과 램프, 기본 조명을 씬에 생성한다.
+        /// </summary>
         private static void CreateEnvironment()
         {
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -112,6 +124,9 @@ namespace Phyzzle.Editor
             lightObject.transform.rotation = Quaternion.Euler(45f, -30f, 0f);
         }
 
+        /// <summary>
+        /// 플레이어 물리, 모델, 카메라, 입력, 두 능력, VFX와 HUD를 생성하고 서로 연결한다.
+        /// </summary>
         private static void CreatePlayer(
             PlayerMovementSettings movementSettings,
             PlayerCameraSettings cameraSettings,
@@ -204,6 +219,9 @@ namespace Phyzzle.Editor
                 rewindAbility);
         }
 
+        /// <summary>
+        /// 플레이어에 되감기 VisualController를 추가하거나 재사용하고 현재 자산 참조로 구성한다.
+        /// </summary>
         public static RewindVisualController EnsureRewindVisualController(
             GameObject player,
             RewindAbilityController rewindAbility,
@@ -225,6 +243,9 @@ namespace Phyzzle.Editor
             return controller;
         }
 
+        /// <summary>
+        /// 플레이어의 부착 투영·테더·접촉·글루 렌더러와 VisualController를 추가하거나 재사용해 연결한다.
+        /// </summary>
         public static AttachVisualController EnsureAttachVisualComponents(
             GameObject player,
             Camera gameplayCamera,
@@ -284,6 +305,9 @@ namespace Phyzzle.Editor
             return visuals;
         }
 
+        /// <summary>
+        /// 지정 설정을 사용하는 AttachmentService 오브젝트를 씬에 생성한다.
+        /// </summary>
         private static AttachmentService CreateAttachmentService(AttachSettings settings)
         {
             GameObject serviceObject = new("AttachmentService");
@@ -292,6 +316,9 @@ namespace Phyzzle.Editor
             return service;
         }
 
+        /// <summary>
+        /// 지정 설정을 사용하는 RewindCoordinator 오브젝트를 씬에 생성한다.
+        /// </summary>
         private static RewindCoordinator CreateRewindCoordinator(RewindSettings settings)
         {
             GameObject serviceObject = new("RewindCoordinator");
@@ -300,6 +327,9 @@ namespace Phyzzle.Editor
             return coordinator;
         }
 
+        /// <summary>
+        /// 부착과 되감기를 모두 시험할 수 있는 동적 큐브 오브젝트를 생성한다.
+        /// </summary>
         private static void CreateAttachable(
             string name,
             Vector3 position,
@@ -324,6 +354,9 @@ namespace Phyzzle.Editor
             recorder.Configure(rewindSettings, rewindCoordinator);
         }
 
+        /// <summary>
+        /// 콜라이더를 제거한 캡슐 모델 오브젝트를 플레이어 자식으로 생성한다.
+        /// </summary>
         private static Transform CreateModel(Transform parent)
         {
             GameObject model = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -334,6 +367,9 @@ namespace Phyzzle.Editor
             return model.transform;
         }
 
+        /// <summary>
+        /// 플레이어 발밑에 트리거 SphereCollider와 PlayerGroundSensor를 생성한다.
+        /// </summary>
         private static PlayerGroundSensor CreateGroundSensor(Transform parent)
         {
             GameObject sensorObject = new("GroundCheck");
@@ -345,6 +381,9 @@ namespace Phyzzle.Editor
             return sensorObject.AddComponent<PlayerGroundSensor>();
         }
 
+        /// <summary>
+        /// 지정 경로의 ScriptableObject 자산을 로드하고 없으면 새 자산을 생성한다.
+        /// </summary>
         private static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {
             T asset = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -358,6 +397,9 @@ namespace Phyzzle.Editor
             return asset;
         }
 
+        /// <summary>
+        /// 선택 중 부착 오브젝트에 사용할 저마찰·고반발 PhysicsMaterial을 로드하거나 생성한다.
+        /// </summary>
         private static PhysicsMaterial LoadOrCreateSelectedPhysicsMaterial()
         {
             PhysicsMaterial material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(SelectedPhysicsMaterialPath);
@@ -378,6 +420,9 @@ namespace Phyzzle.Editor
             return material;
         }
 
+        /// <summary>
+        /// 지정 부모 아래에 필요한 AssetDatabase 하위 폴더가 존재하도록 보장한다.
+        /// </summary>
         private static void EnsureFolder(string parent, string child)
         {
             string path = $"{parent}/{child}";
