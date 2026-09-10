@@ -1,0 +1,65 @@
+name: Annotate complex implementation comments
+
+on:
+  push:
+    branches:
+      - docs/source-comments
+    paths:
+      - .github/workflows/annotate-complex-impl-comments.yml
+      - scripts/annotate_complex_impl_comments.py
+
+permissions:
+  contents: write
+
+jobs:
+  annotate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/source-comments
+          fetch-depth: 0
+
+      - name: Add implementation comments
+        run: python3 scripts/annotate_complex_impl_comments.py
+
+      - name: Verify comments-only diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          paths=(
+            Assets/Phyzzle/Runtime/Abilities/Attach/Visuals/AttachProjectionRenderer.cs
+            Assets/Phyzzle/Runtime/Abilities/Attach/Visuals/AttachVisualController.cs
+            Assets/Phyzzle/Runtime/Abilities/Rewind/Visuals/RewindVisualController.cs
+          )
+
+          git diff --check -- "${paths[@]}"
+
+          if git diff --numstat -- "${paths[@]}" | awk '$2 != 0 { exit 1 }'; then
+            :
+          else
+            echo "Detected deleted source lines"
+            git diff -- "${paths[@]}"
+            exit 1
+          fi
+
+          bad_added_lines="$(git diff --unified=0 -- "${paths[@]}" | grep '^+' | grep -v '^+++' | grep -Ev '^\+[[:space:]]*//' || true)"
+          if [ -n "$bad_added_lines" ]; then
+            echo "Detected non-comment additions:"
+            printf '%s\n' "$bad_added_lines"
+            exit 1
+          fi
+
+      - name: Commit implementation comments
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- Assets/Phyzzle/Runtime; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Assets/Phyzzle/Runtime
+          git commit -m "docs: explain complex visual implementation flows"
+          git push origin HEAD:docs/source-comments
