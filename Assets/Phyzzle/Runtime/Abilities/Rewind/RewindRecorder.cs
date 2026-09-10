@@ -78,6 +78,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         public void CaptureNow()
         {
+            // 되감기 중인 자세를 다시 기록하면 히스토리가 오염되므로 기록하지 않음
             if (body == null || settings == null || IsRewinding)
             {
                 return;
@@ -93,6 +94,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         public void TickRecord(float fixedDeltaTime)
         {
+            // 물리 대상이나 설정이 없거나 현재 되감기 재생 중이면 새 스냅샷을 만들지 않음
             if (body == null || settings == null || IsRewinding)
             {
                 return;
@@ -100,6 +102,7 @@ namespace Phyzzle.Abilities.Rewind
 
             EnsureHistory();
             recordedFixedDeltaTime = Mathf.Max(0.000001f, fixedDeltaTime);
+            // 첫 프레임은 비교 대상이 없으므로 현재 자세를 기준 샘플로 기록
             if (history.Count == 0)
             {
                 RecordPose();
@@ -107,6 +110,7 @@ namespace Phyzzle.Abilities.Rewind
             }
 
             RewindPoseSample newest = history.GetFromOldest(history.Count - 1);
+            // 위치 또는 회전 중 하나라도 설정 임계값 이상 변하면 새로운 모션 샘플로 판단
             bool moved = Vector3.Distance(body.position, newest.Position) >= settings.recordPositionThreshold ||
                 RotationDeltaDegrees(body.rotation, newest.Rotation) >= settings.recordRotationThreshold;
             if (moved)
@@ -114,6 +118,7 @@ namespace Phyzzle.Abilities.Rewind
                 RecordPose();
                 wasMoving = true;
             }
+            // 움직이다 멈춘 순간의 자세도 한 번 기록해야 재생 끝에서 정지 위치가 유지됨
             else if (wasMoving)
             {
                 RecordPose();
@@ -136,6 +141,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         internal bool TrySampleReverse(float historicalAge, out RewindPoseSample sample)
         {
+            // 저장된 자세가 하나도 없으면 시간에 대응하는 샘플을 계산할 수 없음
             if (history == null || history.Count == 0)
             {
                 sample = default;
@@ -143,6 +149,8 @@ namespace Phyzzle.Abilities.Rewind
             }
 
             float age = Mathf.Clamp(historicalAge, 0f, AvailableHistoryDuration);
+            // 최신 인덱스에서 age / dt 만큼 역방향으로 이동한 실수 인덱스를 계산
+            // 예: Count=10, age=1.5dt라면 newest(9)에서 1.5칸 과거인 7.5를 샘플링
             float oldestBasedIndex = Mathf.Clamp(
                 history.Count - 1 - age / recordedFixedDeltaTime,
                 0f,
@@ -152,6 +160,8 @@ namespace Phyzzle.Abilities.Rewind
             float interpolation = oldestBasedIndex - lowerIndex;
             RewindPoseSample lower = history.GetFromOldest(lowerIndex);
             RewindPoseSample upper = history.GetFromOldest(upperIndex);
+
+            // 두 기록 사이의 소수 시간은 위치는 Lerp, 회전은 Slerp로 보간해 연속적인 궤적으로 복원
             sample = new RewindPoseSample(
                 lower.MotionTick,
                 Vector3.Lerp(lower.Position, upper.Position, interpolation),
@@ -191,6 +201,7 @@ namespace Phyzzle.Abilities.Rewind
                 return;
             }
 
+            // 저장 시간 / FixedDeltaTime을 기준으로 필요한 스냅샷 수를 계산해 메모리를 고정 크기로 유지
             int capacity = settings.GetHistoryCapacity(Time.fixedDeltaTime);
             if (forceRecreate || history == null || history.Capacity != capacity)
             {
@@ -213,11 +224,13 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         private static float RotationDeltaDegrees(Quaternion first, Quaternion second)
         {
+            // 상대 회전 q = second * inverse(first)을 구한 뒤 q = [axis*sin(θ/2), cos(θ/2)] 관계를 이용
             Quaternion delta = second * Quaternion.Inverse(first);
             double vectorMagnitude = System.Math.Sqrt(
                 (double)delta.x * delta.x +
                 (double)delta.y * delta.y +
                 (double)delta.z * delta.z);
+            // θ = 2 * atan2(|xyz|, |w|), |w|를 사용해 q/-q 중 짧은 회전 각도를 선택하고 degree로 변환
             return (float)(
                 2d * System.Math.Atan2(vectorMagnitude, System.Math.Abs((double)delta.w)) *
                 (180d / System.Math.PI));

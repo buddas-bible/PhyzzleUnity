@@ -65,6 +65,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         public bool StartRewind(RewindRecorder recorder)
         {
+            // 비활성 대상이나 기록이 부족한 대상은 되감기 상태로 진입시키지 않음
             if (recorder == null || !recorder.isActiveAndEnabled || !CanRewind(recorder))
             {
                 return false;
@@ -73,6 +74,7 @@ namespace Phyzzle.Abilities.Rewind
             current = recorder;
             rewindElapsed = 0f;
             finishAfterPhysicsStep = false;
+            // 되감기 중에는 기록된 궤적만 따라가야 하므로 중력을 잠시 끄고 기존 상태는 종료 시 복원
             previousUseGravity = recorder.Body.useGravity;
             recorder.Body.useGravity = false;
             recorder.Body.linearVelocity = Vector3.zero;
@@ -85,12 +87,14 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         public void TickFixed(float fixedDeltaTime)
         {
+            // 마지막 속도 명령이 실제 물리 스텝에 한 번 적용된 뒤 다음 프레임에서 종료
             if (finishAfterPhysicsStep)
             {
                 EndRewind();
                 return;
             }
 
+            // 대상이 Destroy되어 참조 자체가 사라진 경우 Rigidbody를 만지지 않고 내부 상태만 정리
             if (current == null)
             {
                 ClearMissingTarget();
@@ -103,12 +107,14 @@ namespace Phyzzle.Abilities.Rewind
                 return;
             }
 
+            // 설정이 사라지거나 대상이 비활성화되면 정상 종료 경로를 사용해 중력과 속도를 복원
             if (settings == null || !current.isActiveAndEnabled)
             {
                 EndRewind();
                 return;
             }
 
+            // playbackRate를 곱한 누적 시간을 '현재에서 몇 초 과거인가'로 사용
             rewindElapsed += fixedDeltaTime * settings.playbackRate;
             float targetAge = Mathf.Min(rewindElapsed, current.AvailableHistoryDuration);
             if (!current.TrySampleReverse(targetAge, out RewindPoseSample target))
@@ -117,6 +123,7 @@ namespace Phyzzle.Abilities.Rewind
                 return;
             }
 
+            // 직접 위치를 순간이동시키지 않고 목표 샘플까지 필요한 속도를 계산해 PhysX가 한 스텝 동안 이동하도록 함
             RewindDrive drive = RewindVelocityServo.Calculate(
                 current.Body.position,
                 current.Body.rotation,
@@ -127,6 +134,7 @@ namespace Phyzzle.Abilities.Rewind
 
             current.Body.linearVelocity = drive.LinearVelocity;
             current.Body.angularVelocity = drive.AngularVelocity;
+            // 히스토리 끝에 도달한 프레임의 속도가 실제로 적용될 시간을 보장하기 위해 종료를 한 스텝 미룸
             finishAfterPhysicsStep = rewindElapsed >= current.AvailableHistoryDuration;
         }
 
@@ -135,6 +143,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         public void EndRewind()
         {
+            // current를 먼저 비워도 마지막 Rigidbody는 정리할 수 있도록 로컬 변수에 보관
             Rigidbody body = current != null ? current.Body : null;
             current = null;
             rewindElapsed = 0f;

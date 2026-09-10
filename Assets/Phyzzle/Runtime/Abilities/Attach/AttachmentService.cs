@@ -25,6 +25,7 @@ namespace Phyzzle.Abilities.Attach
             {
                 EntityId aId = a.GetEntityId();
                 EntityId bId = b.GetEntityId();
+                // A-B와 B-A가 같은 연결 키가 되도록 ID가 작은 쪽을 항상 first에 저장
                 first = aId < bId ? aId : bId;
                 second = aId < bId ? bId : aId;
             }
@@ -87,6 +88,7 @@ namespace Phyzzle.Abilities.Attach
                 return;
             }
 
+            // 노드를 그래프에서 지우기 전에 연결된 Joint와 간선을 먼저 해제
             Detach(attachable);
             if (graph.Remove(attachable))
             {
@@ -186,6 +188,7 @@ namespace Phyzzle.Abilities.Attach
                 return false;
             }
 
+            // 그래프의 섬 순서대로 탐색해 프리뷰에서 보여준 것과 같은 첫 접촉 후보를 실제 연결 대상으로 사용
             foreach (AttachableObject member in graph.GetComponent(attachable))
             {
                 if (member == null || member.ContactCandidate == null)
@@ -197,6 +200,7 @@ namespace Phyzzle.Abilities.Attach
                 Vector3 anchor = member.ContactAnchor;
                 if (Attach(member, other, anchor))
                 {
+                    // 연결이 만들어진 접촉 정보는 양쪽 모두에서 제거해 다음 프레임에 같은 연결을 다시 시도하지 않음
                     member.ClearContact(other);
                     other.ClearContact(member);
                     return true;
@@ -240,6 +244,7 @@ namespace Phyzzle.Abilities.Attach
             }
 
             // The caller keeps this BFS island current with TopologyVersion, matching TryAttach order.
+            // TryAttach와 결과가 달라지지 않도록 캐시된 BFS 섬의 순서를 그대로 사용
             for (int i = 0; i < heldIsland.Count; i++)
             {
                 AttachableObject candidateMember = heldIsland[i];
@@ -255,6 +260,7 @@ namespace Phyzzle.Abilities.Attach
                 }
 
                 // ponytail: scan small cached islands; use a reused membership set if large islands need it.
+                // 접촉 후보가 이미 들고 있는 같은 섬의 구성원인지 확인해 내부 연결은 프리뷰 대상에서 제외
                 bool isInHeldIsland = false;
                 for (int j = 0; j < heldIsland.Count; j++)
                 {
@@ -271,6 +277,7 @@ namespace Phyzzle.Abilities.Attach
                 }
 
                 // Suppress an inactive first candidate instead of previewing a different TryAttach result.
+                // 첫 후보가 비활성이면 뒤 후보를 대신 보여주지 않음. 그래야 실제 TryAttach의 첫 후보 순서와 화면 결과가 일치
                 if (!candidateMember.isActiveAndEnabled || !candidateOther.isActiveAndEnabled)
                 {
                     return false;
@@ -290,6 +297,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         public bool Attach(AttachableObject first, AttachableObject second, Vector3 worldAnchor)
         {
+            // 자기 자신, Rigidbody가 없는 대상, 이미 같은 섬인 대상은 중복 Joint를 만들 수 없으므로 종료
             if (first == null || second == null || first == second ||
                 first.Body == null || second.Body == null || AreInSameIsland(first, second))
             {
@@ -299,6 +307,7 @@ namespace Phyzzle.Abilities.Attach
             FixedJoint joint = first.gameObject.AddComponent<FixedJoint>();
             joint.connectedBody = second.Body;
             joint.autoConfigureConnectedAnchor = false;
+            // 같은 World 접점을 각 Rigidbody의 로컬 좌표로 변환해야 두 anchor가 정확히 같은 지점을 가리킴
             joint.anchor = first.transform.InverseTransformPoint(worldAnchor);
             joint.connectedAnchor = second.transform.InverseTransformPoint(worldAnchor);
             joint.breakForce = float.PositiveInfinity;
@@ -310,6 +319,7 @@ namespace Phyzzle.Abilities.Attach
             {
                 TopologyVersion++;
             }
+            // 그래프 간선과 실제 PhysX Joint를 같은 무방향 EdgeKey로 연결해 분리 시 바로 찾을 수 있게 함
             joints[new EdgeKey(first, second)] = joint;
             return true;
         }
@@ -324,6 +334,7 @@ namespace Phyzzle.Abilities.Attach
                 return false;
             }
 
+            // Disconnect 중 그래프의 이웃 목록이 바뀌므로 먼저 복사해서 순회 안정성을 보장
             List<AttachableObject> neighbors = new(graph.GetNeighbors(attachable));
             if (neighbors.Count == 0)
             {
@@ -335,6 +346,7 @@ namespace Phyzzle.Abilities.Attach
                 EdgeKey key = new(attachable, neighbor);
                 if (joints.Remove(key, out FixedJoint joint) && joint != null)
                 {
+                    // 플레이 중에는 Unity의 지연 Destroy, EditMode에서는 즉시 제거를 사용
                     if (Application.isPlaying)
                     {
                         Destroy(joint);
@@ -348,6 +360,7 @@ namespace Phyzzle.Abilities.Attach
                 graph.Disconnect(attachable, neighbor);
             }
 
+            // 분리 뒤에는 하나의 섬이 여러 컴포넌트로 나뉠 수 있으므로 각 former neighbor에서 새 컴포넌트를 다시 순회
             foreach (AttachableObject formerNeighbor in neighbors)
             {
                 foreach (AttachableObject member in graph.GetComponent(formerNeighbor))

@@ -97,6 +97,7 @@ namespace Phyzzle.Player
         /// </summary>
         public void TickFixed(Vector2 moveInput, bool jumpPressed, bool allowControl)
         {
+            // 이동 계산에 필요한 Rigidbody, 기준 Transform, 설정이 없으면 해당 물리 프레임을 처리하지 않음
             if (!IsConfigured())
             {
                 return;
@@ -120,6 +121,7 @@ namespace Phyzzle.Player
             }
             else
             {
+                // 능력이 이동 제어를 막는 동안에도 플랫폼 속도나 과도한 수직 속도가 다음 프레임에 남지 않도록 정리
                 IsMoving = false;
                 platformVelocity = Vector3.zero;
                 ClampVerticalVelocity();
@@ -142,6 +144,7 @@ namespace Phyzzle.Player
             IsGrounded = groundSensor != null && groundSensor.IsGrounded;
             IsOnStandableSlope = false;
 
+            // 트리거 센서가 지면과 접촉하지 않았다면 추가 레이캐스트를 하지 않음
             if (!IsGrounded)
             {
                 return;
@@ -156,6 +159,7 @@ namespace Phyzzle.Player
                 settings.groundMask,
                 QueryTriggerInteraction.Ignore);
 
+            // 센서 접촉은 있지만 발 아래에서 실제 지면을 찾지 못하면 경사 이동으로 판단하지 않음
             if (!hitGround)
             {
                 return;
@@ -171,6 +175,7 @@ namespace Phyzzle.Player
         /// </summary>
         private bool TryJump()
         {
+            // 공중이거나 서 있을 수 없는 급경사에서는 점프를 허용하지 않음
             if (!IsGrounded || !IsOnStandableSlope)
             {
                 return false;
@@ -201,6 +206,7 @@ namespace Phyzzle.Player
                 ApplyAirMovement(input, currentVelocity);
             }
 
+            // 플랫폼에서 받은 속도는 이번 이동 계산에 한 번만 더하고 다음 프레임에 다시 충돌 정보로 갱신
             platformVelocity = Vector3.zero;
             IsMoving = input.magnitude >= 0.000001f;
 
@@ -215,6 +221,7 @@ namespace Phyzzle.Player
         /// </summary>
         private void ApplyGroundMovement(Vector2 input, Vector3 currentVelocity)
         {
+            // 카메라 기준 원래 입력 방향과 실제 경사면을 따라갈 방향을 각각 계산
             Vector3 originDirection = PlayerMovementMath.CameraRelativeDirection(
                 input,
                 movementReference.forward);
@@ -229,6 +236,7 @@ namespace Phyzzle.Player
                 originDirection,
                 direction);
 
+            // 목표 수평 속도 - 현재 수평 속도만큼 VelocityChange를 줘 한 스텝에 목표 이동 속도로 맞춤
             Vector3 horizontalVelocity = currentVelocity;
             horizontalVelocity.y = 0f;
             Vector3 additionalVelocity = targetVelocity - horizontalVelocity;
@@ -250,6 +258,7 @@ namespace Phyzzle.Player
 
             if (IsFlying)
             {
+                // 강한 충격으로 비행 중일 때는 일반 공중 가속이 아니라 기존 방식의 힘 입력을 사용
                 Vector3 targetVelocity = CalculateTargetVelocity(
                     input,
                     wishDirection,
@@ -258,6 +267,7 @@ namespace Phyzzle.Player
                 return;
             }
 
+            // 입력 방향이 없으면 정규화 및 Dot 계산을 할 필요가 없으므로 공중 제어를 종료
             if (input.sqrMagnitude <= DirectionEpsilon ||
                 wishDirection.sqrMagnitude <= DirectionEpsilon)
             {
@@ -270,13 +280,16 @@ namespace Phyzzle.Player
             horizontalVelocity.y = 0f;
 
             float wishSpeed = settings.airWishSpeed * input.magnitude;
+            // 현재 속도를 입력 방향에 투영해서 이미 그 방향으로 확보한 속도를 구함
             float speedAlongWishDirection = Vector3.Dot(horizontalVelocity, wishDirection);
             float speedRoom = wishSpeed - speedAlongWishDirection;
+            // 원하는 방향 속도가 이미 wishSpeed 이상이면 추가 가속하지 않아 공중 속도가 계속 증가하는 것을 방지
             if (speedRoom <= 0f)
             {
                 return;
             }
 
+            // 이번 물리 프레임에서 늘릴 속도는 남은 속도 여유와 acceleration * dt 중 작은 값만 허용
             float deltaSpeed = Mathf.Min(
                 speedRoom,
                 settings.airAcceleration * Time.fixedDeltaTime);
@@ -300,6 +313,7 @@ namespace Phyzzle.Player
             }
 
             float movementSpeed = speedOverride >= 0f ? speedOverride : settings.moveSpeed;
+            // 경사면 투영 후 방향과 원래 카메라 입력 방향의 Dot을 곱해 투영으로 늘어난 속도 성분을 보정
             float alignment = Vector3.Dot(direction, originDirection);
             return direction * (movementSpeed * input.magnitude * alignment);
         }
@@ -315,6 +329,7 @@ namespace Phyzzle.Player
             }
 
             worldVelocity.y = 0f;
+            // 정지에 가까운 속도로 LookRotation을 만들면 방향이 불안정해지므로 회전을 유지
             if (worldVelocity.sqrMagnitude <= 0.0001f)
             {
                 return;
@@ -340,6 +355,7 @@ namespace Phyzzle.Player
         {
             if (pendingFlyingVelocity.sqrMagnitude > 0f)
             {
+                // 충돌 콜백에서 바로 힘을 주지 않고 다음 FixedUpdate에서 적용해 물리 갱신 순서를 일정하게 유지
                 body.AddForce(
                     pendingFlyingVelocity,
                     LegacyForceModeMap.ToUnity(LegacyForceType.Accelration));
@@ -387,6 +403,7 @@ namespace Phyzzle.Player
             GameObject other = collision.gameObject;
             Rigidbody otherBody = collision.rigidbody;
 
+            // 일반 MovingPlatform뿐 아니라 되감기 때문에 움직이는 Rigidbody도 플랫폼 속도 전달 대상으로 취급
             RewindRecorder rewindPlatform = other.GetComponentInParent<RewindRecorder>();
             bool transfersPlatformMotion =
                 other.GetComponentInParent<MovingPlatform>() != null ||
@@ -398,6 +415,7 @@ namespace Phyzzle.Player
                 {
                     Vector3 candidateVelocity = otherBody.GetPointVelocity(contact.point);
                     Vector3 referencePosition = modelRoot != null ? modelRoot.position : transform.position;
+                    // 발 아래쪽 접점만 플랫폼으로 보고, 여러 접점 중 가장 큰 속도를 사용해 중복 전달을 방지
                     if (contact.point.y < referencePosition.y + 0.5f &&
                         candidateVelocity.sqrMagnitude > platformVelocity.sqrMagnitude)
                     {
@@ -406,12 +424,14 @@ namespace Phyzzle.Player
                 }
             }
 
+            // 충돌 상대가 명시적인 충격 소스가 아니면 일반 지형 충돌이므로 비행 상태로 전환하지 않음
             if (other.GetComponentInParent<PlayerImpulseSource>() == null)
             {
                 return;
             }
 
             Vector3 impulse = collision.impulse;
+            // 임계값을 넘는 충격 중 현재 예약된 값보다 강한 충격만 다음 FixedUpdate에 적용
             if (impulse.magnitude >= settings.impactThreshold &&
                 impulse.sqrMagnitude > pendingFlyingVelocity.sqrMagnitude)
             {

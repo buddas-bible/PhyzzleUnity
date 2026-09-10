@@ -21,11 +21,13 @@ namespace Phyzzle.Player
             if (pitch >= 0f)
             {
                 float ratio = highPitchLimit <= 0f ? 0f : Mathf.Clamp01(pitch / highPitchLimit);
+                // 위를 볼 때는 ease-out quadratic: 1 - (1 - t)^2로 초반 카메라 이동을 빠르게 반영
                 float eased = 1f - (1f - ratio) * (1f - ratio);
                 return defaultLocalZ + (highPitchLocalZ - defaultLocalZ) * eased;
             }
 
             float lowRatio = lowPitchLimit >= 0f ? 0f : Mathf.Clamp01(pitch / lowPitchLimit);
+            // 아래를 볼 때는 5차 ease-out을 사용해 작은 피치에서는 변화가 크고 끝부분은 부드럽게 수렴
             float lowEased = 1f - Mathf.Pow(1f - lowRatio, 5f);
             return defaultLocalZ + (lowPitchLocalZ - defaultLocalZ) * lowEased;
         }
@@ -39,6 +41,7 @@ namespace Phyzzle.Player
             out Vector3 localPosition,
             out Quaternion localRotation)
         {
+            // 설정이 없으면 유효한 카메라 자세를 계산할 수 없으므로 기본값으로 반환
             if (settings == null)
             {
                 localPosition = Vector3.zero;
@@ -47,10 +50,13 @@ namespace Phyzzle.Player
             }
 
             float dy = relativePosition.y;
+            // 좌우 오프셋도 거리 변화에 반영하기 위해 XZ 평면의 거리를 사용
             float dz = new Vector2(relativePosition.x, relativePosition.z).magnitude;
             bool isHigh = dy > 0f;
             float heightLimit = isHigh ? settings.holdingHighHeight : settings.holdingLowHeight;
             float heightRatio = Mathf.Clamp01(Mathf.Abs(dy) / heightLimit);
+
+            // 위치와 회전은 서로 다른 near/far 구간을 사용하므로 각각 독립적인 거리 보간 비율을 계산
             float positionDistanceRatio = Mathf.InverseLerp(
                 settings.holdingPositionNearDistance,
                 settings.holdingPositionFarDistance,
@@ -60,6 +66,7 @@ namespace Phyzzle.Player
                 settings.holdingRotationFarDistance,
                 dz);
 
+            // 대상이 플레이어보다 위인지 아래인지에 따라 사용할 카메라 프리셋을 선택
             HoldingCameraPose active0 = isHigh
                 ? settings.holdingHighCamera0
                 : settings.holdingLowCamera0;
@@ -67,6 +74,8 @@ namespace Phyzzle.Player
                 ? settings.holdingHighCamera1
                 : settings.holdingLowCamera1;
 
+            // 1차: 대상 거리로 near/far 프리셋을 보간
+            // 2차: 대상 높이로 default 자세와 high/low 자세를 보간
             Vector3 defaultPosition = Vector3.Lerp(
                 settings.holdingDefaultCamera0.localPosition,
                 settings.holdingDefaultCamera1.localPosition,
