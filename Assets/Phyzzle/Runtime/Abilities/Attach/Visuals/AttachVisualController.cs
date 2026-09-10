@@ -91,6 +91,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         internal void TickVisual(float unscaledDeltaTime)
         {
+            // 필요한 시스템이 비활성/누락되거나 다른 RenderPipeline이면 이전 Rendering Layer와 전역 Shader 값까지 즉시 정리
             if (ability == null || targeting == null || holdController == null || attachmentService == null ||
                 projectionRenderer == null || settings == null || !ability.isActiveAndEnabled ||
                 !targeting.isActiveAndEnabled || !holdController.isActiveAndEnabled ||
@@ -100,6 +101,7 @@ namespace Phyzzle.Abilities.Attach
                 return;
             }
 
+            // 선택 상태에서는 Eligible/Focused만 사용하므로 들기 전용 Projection/Tether/Contact Preview는 제거
             if (ability.State == AttachAbilityController.AbilityState.Selecting)
             {
                 BuildSelectingRoles();
@@ -115,12 +117,14 @@ namespace Phyzzle.Abilities.Attach
             if (ability.State == AttachAbilityController.AbilityState.Holding)
             {
                 AttachableObject heldRoot = holdController.HeldObject;
+                // 들던 Root가 파괴/비활성화되면 캐시된 Renderer 역할이 남지 않도록 전체 시각 상태를 정리
                 if (heldRoot == null || !heldRoot.isActiveAndEnabled)
                 {
                     HardCleanup();
                     return;
                 }
 
+                // Root가 바뀌거나 Attach/Detach로 그래프 구조가 변한 경우에만 섬과 Renderer 목록을 다시 수집
                 if (heldRoot != observedHeldRoot || observedTopologyVersion != attachmentService.TopologyVersion)
                 {
                     BuildHoldingRoles(heldRoot);
@@ -199,6 +203,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         private void AddObjectRole(AttachableObject attachable, uint role)
         {
+            // 한 오브젝트가 여러 상태에 걸리면 Held > Focused > Eligible 우선순위가 높은 역할 하나만 유지
             if (attachable == null ||
                 (desiredObjectRoles.TryGetValue(attachable, out uint current) && RolePriority(current) >= RolePriority(role)))
             {
@@ -213,6 +218,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         private void UpdateRoles()
         {
+            // 오브젝트 역할이 지난 프레임과 같으면 GetComponentsInChildren과 Rendering Layer 재적용을 생략
             if (SameObjectRoles(desiredObjectRoles, appliedObjectRoles))
             {
                 return;
@@ -287,6 +293,7 @@ namespace Phyzzle.Abilities.Attach
                     continue;
                 }
 
+                // 다른 시스템의 Rendering Layer는 보존하고 Attach가 소유한 비트만 지운 뒤 새 역할 비트를 적용
                 pair.Key.renderingLayerMask = (pair.Key.renderingLayerMask & ~AttachVisualLayers.Owned) | pair.Value;
                 appliedRendererRoles.Add(pair.Key, pair.Value);
             }
@@ -314,6 +321,7 @@ namespace Phyzzle.Abilities.Attach
         {
             // A preview promises an available action; unlike the holding glow, it must not linger.
             contactPreviewRenderer?.Clear();
+            // Unity Object의 == null은 Destroy된 객체도 true가 되므로 ReferenceEquals로 '한 번이라도 들었던 Root'인지 먼저 구분
             if (!ReferenceEquals(observedHeldRoot, null) &&
                 (observedHeldRoot == null || !observedHeldRoot.isActiveAndEnabled))
             {
@@ -321,6 +329,7 @@ namespace Phyzzle.Abilities.Attach
                 return;
             }
 
+            // 이미 완전히 사라진 상태라면 남은 캐시와 Rendering Layer를 즉시 정리하고 더 이상 Draw하지 않음
             if (visualBlend <= 0f)
             {
                 HardCleanup();
@@ -435,6 +444,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         private static float MoveBlend(float current, float target, float duration, float deltaTime)
         {
+            // deltaTime / duration을 한 프레임 이동량으로 사용하면 총 duration 동안 0~1 전체 구간을 일정하게 이동
             return duration <= 0f
                 ? target
                 : Mathf.MoveTowards(current, target, Mathf.Max(0f, deltaTime) / duration);

@@ -151,12 +151,14 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         internal void TickVisual(float unscaledDeltaTime)
         {
+            // 필수 참조가 하나라도 없으면 이전 프레임의 Rendering Layer/전역 Shader 상태가 남지 않도록 전체 정리
             if (ability == null || targeting == null || playerRoot == null || settings == null)
             {
                 HardCleanup();
                 return;
             }
 
+            // 구성 당시와 다른 RenderPipeline이거나 능력 시스템이 비활성 상태면 전용 RenderFeature를 사용할 수 없음
             if (!SupportsPipeline(supportedPipeline, GraphicsSettings.currentRenderPipeline) ||
                 !ability.isActiveAndEnabled || !targeting.isActiveAndEnabled)
             {
@@ -181,6 +183,7 @@ namespace Phyzzle.Abilities.Rewind
 
             if (selectionBlend > 0f)
             {
+                // Unity의 Destroy된 Object는 == null로 보이므로 ReferenceEquals로 실제 캐시가 있었는지 구분한 뒤 즉시 정리
                 if (!ReferenceEquals(cachedTarget, null) &&
                     (cachedTarget == null || !cachedTarget.isActiveAndEnabled))
                 {
@@ -230,6 +233,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         private void RefreshRendererMasks()
         {
+            // 매 선택 프레임마다 이전 역할 비트를 걷어낸 뒤 Player Preserve -> Eligible -> Active 순서로 현재 상태를 다시 구성
             RemoveOwnedLayers();
             AddRole(playerRoot, RewindVisualLayers.PlayerPreserve, excludePreview: true);
 
@@ -298,6 +302,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         private void RefreshPreview(RewindRecorder current)
         {
+            // 선택 대상이 사라지면 이전 대상의 경로/고스트가 화면에 남지 않도록 Preview 캐시를 비움
             if (current == null || !current.isActiveAndEnabled || current.Body == null)
             {
                 ClearPreview();
@@ -305,6 +310,7 @@ namespace Phyzzle.Abilities.Rewind
             }
 
             int snapshotCount = current.SnapshotCount;
+            // 같은 대상의 Snapshot 수가 그대로면 경로와 Ghost Geometry도 동일하므로 재샘플링을 생략
             if (current == cachedTarget && snapshotCount == cachedSnapshotCount)
             {
                 return;
@@ -312,6 +318,7 @@ namespace Phyzzle.Abilities.Rewind
 
             cachedTarget = current;
             cachedSnapshotCount = snapshotCount;
+            // 최신 -> 과거 순서의 전체 기록에서 화면용 Path와 제한된 개수의 Ghost 샘플만 다시 추출
             current.CopyHistoryNewestFirst(history);
             RewindPreviewSampler.Build(
                 history,
@@ -319,6 +326,7 @@ namespace Phyzzle.Abilities.Rewind
                 settings.previewGhostCount,
                 pathSamples,
                 ghostSamples);
+            // 선을 만들 최소 두 점이 없거나 Material이 없으면 캐시는 유지하되 실제 Preview Geometry만 숨김
             if (pathSamples.Count < 2 || previewMaterial == null)
             {
                 HidePreviewGeometry();
@@ -353,6 +361,7 @@ namespace Phyzzle.Abilities.Rewind
                     continue;
                 }
 
+                // 대상 Root가 과거 Pose로 이동해도 자식 Mesh 배치가 유지되도록 위치/회전/스케일을 Root 로컬 기준으로 저장
                 meshSources.Add(new MeshSource(
                     filter.sharedMesh,
                     bodyRoot.InverseTransformPoint(filter.transform.position),
@@ -371,6 +380,7 @@ namespace Phyzzle.Abilities.Rewind
             {
                 Ghost ghost = EnsureGhost(i);
                 RewindPoseSample sample = ghostSamples[i];
+                // Ghost Root를 과거 Pose에 놓고 자식 Mesh는 저장해둔 로컬 변환을 재사용
                 ghost.Object.transform.SetPositionAndRotation(sample.Position, sample.Rotation);
                 ghost.Object.transform.localScale = DivideScale(bodyRoot.lossyScale, previewRoot.lossyScale);
                 ghost.Object.SetActive(true);
@@ -433,6 +443,7 @@ namespace Phyzzle.Abilities.Rewind
                 mesh.Object.transform.localScale = source.LocalScale;
                 mesh.Filter.sharedMesh = source.Mesh;
                 mesh.Renderer.renderingLayerMask = RewindVisualLayers.Active;
+                // MeshRenderer.sharedMaterials 수를 subMesh 수와 맞춰 모든 SubMesh가 Preview Material로 렌더되게 함
                 int materialCount = Mathf.Max(1, source.Mesh.subMeshCount);
                 if (mesh.Materials == null || mesh.Materials.Length != materialCount)
                 {
@@ -458,6 +469,7 @@ namespace Phyzzle.Abilities.Rewind
         /// </summary>
         private static Vector3 DivideScale(Vector3 value, Vector3 divisor)
         {
+            // 부모 Scale이 0에 가까운 축은 나눗셈이 발산하므로 해당 축의 원래 값을 그대로 사용
             return new Vector3(
                 Mathf.Abs(divisor.x) > 0.000001f ? value.x / divisor.x : value.x,
                 Mathf.Abs(divisor.y) > 0.000001f ? value.y / divisor.y : value.y,
@@ -484,6 +496,7 @@ namespace Phyzzle.Abilities.Rewind
             previewProperties.SetFloat(RewindVisualShaderIds.PreviewMaskWeight, 1f);
             previewPath.SetPropertyBlock(previewProperties);
 
+            // Ghost 자체 alpha와 전체 선택 fade를 곱해 개별 Ghost 강도와 화면 전환 강도를 독립적으로 조절
             Color ghostColor = settings.activeVisualColor;
             ghostColor.a = Mathf.Clamp01(settings.previewGhostAlpha) * selectionBlend;
             previewProperties.Clear();

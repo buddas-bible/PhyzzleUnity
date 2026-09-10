@@ -113,17 +113,20 @@ namespace Phyzzle.Abilities.Attach
         internal void Submit(float deltaTime)
         {
             LastSubmittedDrawCount = 0;
+            // 카메라, 설정, Material 또는 투영할 Mesh가 하나라도 없으면 Draw를 만들 수 없으므로 종료
             if (camera == null || settings == null || projectionMaterial == null || currentSurfaces == null ||
                 !HasSourceMesh())
             {
                 return;
             }
 
+            // 투영 방향의 시작점을 정하려면 섬 전체 Bounds가 필요하므로 유효한 Renderer/Collider가 없으면 종료
             if (!TryGetCombinedBounds(out Bounds combinedBounds))
             {
                 return;
             }
 
+            // 카메라가 위/아래를 거의 수직으로 볼 때 수평 Forward가 0이 되므로 직전 유효 방향을 fallback으로 사용
             Vector3 fallbackForward = lastPlanarForward.sqrMagnitude > PlanarEpsilon
                 ? lastPlanarForward
                 : camera.transform.root.forward;
@@ -131,6 +134,7 @@ namespace Phyzzle.Abilities.Attach
             lastPlanarForward = planarForward;
             Vector3 right = Vector3.Cross(Vector3.up, planarForward);
 
+            // 매 프레임 dt / fadeDuration만큼 0~1 상태를 이동시켜 프레임레이트와 무관한 페이드 속도를 만듦
             float fadeStep = Mathf.Max(0f, deltaTime) / SurfaceFadeSeconds;
             SubmitDirection(combinedBounds, Vector3.down, 0, fadeStep);
             SubmitDirection(combinedBounds, -right, 1, fadeStep);
@@ -197,6 +201,7 @@ namespace Phyzzle.Abilities.Attach
             out Vector4 plane)
         {
             Vector3 normal = hit.normal.normalized;
+            // N·D가 0에 가까우면 투영선과 평면이 거의 평행이라 교점 계산의 분모가 불안정해지므로 제외
             if (Mathf.Abs(Vector3.Dot(direction, normal)) < parallelThreshold)
             {
                 plane = default;
@@ -213,6 +218,7 @@ namespace Phyzzle.Abilities.Attach
         internal static Vector3 ProjectPoint(Vector3 point, Vector3 direction, Vector4 plane)
         {
             Vector3 normal = new(plane.x, plane.y, plane.z);
+            // 평면식 N·P + d = 0, 투영점 P' = P - D*t에서 t = (N·P + d) / (N·D)
             float denominator = Vector3.Dot(normal, direction);
             return point - direction * ((Vector3.Dot(normal, point) + plane.w) / denominator);
         }
@@ -224,6 +230,7 @@ namespace Phyzzle.Abilities.Attach
         {
             Vector3 min = source.min;
             Vector3 max = source.max;
+            // 회전된 투영 결과는 원본 AABB 크기를 그대로 쓸 수 없으므로 8개 꼭짓점을 모두 투영해 새 Bounds를 구성
             Bounds projected = new(ProjectPoint(new Vector3(min.x, min.y, min.z), direction, plane), Vector3.zero);
             for (int x = 0; x < 2; x++)
             {
@@ -311,6 +318,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         private void SubmitDirection(Bounds combinedBounds, Vector3 direction, int index, float fadeStep)
         {
+            // 섬 Bounds의 바깥면에서 해당 방향으로 Ray를 쏴 가장 먼저 만나는 수신 표면을 찾음
             Vector3 origin = GetCastOrigin(combinedBounds, direction, settings.projectionSurfaceBias);
             bool hasHit = Physics.Raycast(origin, direction, out RaycastHit hit, settings.projectionMaxDistance,
                 settings.targetMask, QueryTriggerInteraction.Ignore) &&
@@ -318,8 +326,10 @@ namespace Phyzzle.Abilities.Attach
 
             ReceiverSurface current = currentSurfaces[index];
             ReceiverSurface retiring = retiringSurfaces[index];
+            // 같은 방향에서 수신 표면이 바뀌면 기존 표면을 즉시 끄지 않고 retiring 슬롯으로 넘겨 교차 페이드
             if (hasHit && !current.Matches(hit, settings.projectionDepthTolerance))
             {
+                // 페이드 도중 표면이 연속으로 바뀌면 opacity가 더 높은 기존 표면을 retiring으로 유지해 깜빡임을 줄임
                 // Keep the stronger old surface when several receivers change inside one fade.
                 if (retiring.Matches(hit, settings.projectionDepthTolerance) || current.Opacity >= retiring.Opacity)
                 {
@@ -339,6 +349,7 @@ namespace Phyzzle.Abilities.Attach
                 current.Capture(hit, direction);
             }
 
+            // 새 표면은 fade-in, 이전 표면은 fade-out을 동시에 진행한 뒤 두 표면을 모두 Draw
             current.Fade(hasHit, fadeStep);
             retiring.Fade(false, fadeStep);
             DrawSurface(combinedBounds, current);
@@ -350,6 +361,7 @@ namespace Phyzzle.Abilities.Attach
         /// </summary>
         private void DrawSurface(Bounds combinedBounds, ReceiverSurface surface)
         {
+            // 완전히 투명하거나 유효 평면이 없거나 투영 방향과 평면이 평행한 경우 Shader의 평면 투영식을 실행하지 않음
             if (surface.Opacity <= 0f || !surface.TryGetPlane(out Vector4 plane) ||
                 Mathf.Abs(Vector3.Dot(new Vector3(plane.x, plane.y, plane.z), surface.Direction)) <
                 settings.projectionParallelThreshold)
@@ -369,6 +381,7 @@ namespace Phyzzle.Abilities.Attach
             {
                 camera = camera,
                 matProps = properties,
+                // Graphics.RenderMesh의 frustum culling도 투영된 위치를 기준으로 해야 하므로 projected Bounds를 전달
                 worldBounds = ProjectBounds(combinedBounds, surface.Direction, plane),
                 shadowCastingMode = ShadowCastingMode.Off,
                 receiveShadows = false
