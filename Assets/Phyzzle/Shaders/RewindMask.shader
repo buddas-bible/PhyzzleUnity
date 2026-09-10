@@ -11,6 +11,7 @@ Shader "Hidden/Phyzzle/RewindMask"
         Cull Back
         ZWrite Off
         ZTest LEqual
+        // 여러 Renderer가 같은 픽셀에 겹쳐도 각 상태 채널의 가장 큰 값이 유지되도록 Max 합성을 사용
         Blend One One
         BlendOp Max
 
@@ -43,6 +44,7 @@ Shader "Hidden/Phyzzle/RewindMask"
         }
         ENDHLSL
 
+        // RGB 채널을 R=Player Preserve, G=Eligible, B=Active 상태로 사용
         Pass
         {
             Name "Player Preserve"
@@ -71,6 +73,7 @@ Shader "Hidden/Phyzzle/RewindMask"
             #pragma fragment Fragment
             float4 Fragment(Varyings input) : SV_Target
             {
+                // Preview Ghost는 alpha 대신 이 가중치를 B 채널에 기록해 Active 효과 강도를 조절
                 return float4(0, 0, saturate(_RewindPreviewMaskWeight), 1);
             }
             ENDHLSL

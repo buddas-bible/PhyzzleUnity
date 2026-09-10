@@ -59,11 +59,14 @@ namespace Phyzzle.Abilities.Attach
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
                 UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+                // 재질이 없거나 카메라가 BackBuffer에 직접 그리는 경우 중간 텍스처를 안전하게 합성할 수 없으므로 패스를 만들지 않음
                 if (maskMaterial == null || compositeMaterial == null || resourceData.isActiveTargetBackBuffer)
                 {
                     return;
                 }
 
+                // R/G/B 채널에 Eligible/Focused/Held 상태를 각각 기록하므로 3채널 이상인 정규화 포맷을 사용
+                // 마스크 경계가 섞이지 않도록 MSAA와 선형 필터링, MipMap은 사용하지 않음
                 TextureDesc maskDescriptor = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
                 maskDescriptor.name = "Attach Selection Mask";
                 maskDescriptor.colorFormat = RequiredMaskFormat;
@@ -79,6 +82,7 @@ namespace Phyzzle.Abilities.Attach
                 using (IRasterRenderGraphBuilder builder = renderGraph.AddRasterRenderPass<MaskPassData>(
                            "Attach Selection Mask", out MaskPassData passData))
                 {
+                    // 같은 Mask Material의 0/1/2번 Pass가 각각 R/G/B 상태값을 출력
                     passData.Eligible = CreateRendererList(renderGraph, frameData, AttachVisualLayers.Eligible, 0);
                     passData.Focused = CreateRendererList(renderGraph, frameData, AttachVisualLayers.Focused, 1);
                     passData.Held = CreateRendererList(renderGraph, frameData, AttachVisualLayers.Held, 2);
@@ -86,7 +90,9 @@ namespace Phyzzle.Abilities.Attach
                     builder.UseRendererList(passData.Focused);
                     builder.UseRendererList(passData.Held);
                     builder.SetRenderAttachment(mask, 0, AccessFlags.Write);
+                    // 씬 Depth를 읽어 가려진 오브젝트의 마스크가 앞쪽 지형을 뚫고 나오지 않게 함
                     builder.SetRenderAttachmentDepth(resourceData.activeDepthTexture, AccessFlags.Read);
+                    // 다음 Composite Pass가 별도 핸들 전달 없이 같은 마스크를 샘플링할 수 있도록 전역 텍스처로 등록
                     builder.SetGlobalTextureAfterPass(mask, AttachVisualShaderIds.MaskTexture);
                     builder.SetRenderFunc(static (MaskPassData data, RasterGraphContext context) =>
                     {
@@ -97,6 +103,7 @@ namespace Phyzzle.Abilities.Attach
                 }
 
                 TextureHandle source = resourceData.activeColorTexture;
+                // 같은 Color Texture를 동시에 읽고 쓸 수 없으므로 별도 destination을 만든 뒤 cameraColor를 교체
                 TextureDesc destinationDescriptor = renderGraph.GetTextureDesc(source);
                 destinationDescriptor.name = "Attach Composite Color";
                 destinationDescriptor.clearBuffer = false;
@@ -123,10 +130,12 @@ namespace Phyzzle.Abilities.Attach
                 UniversalLightData lightData = frameData.Get<UniversalLightData>();
                 DrawingSettings drawingSettings = RenderingUtils.CreateDrawingSettings(
                     shaderTags, renderingData, cameraData, lightData, cameraData.defaultOpaqueSortFlags);
+                // 원본 Material 대신 Mask Material의 지정 Pass로 렌더해 상태 채널만 기록
                 drawingSettings.overrideMaterial = maskMaterial;
                 drawingSettings.overrideMaterialPassIndex = materialPass;
                 FilteringSettings filteringSettings = new(RenderQueueRange.all, -1)
                 {
+                    // GameObject Layer가 아니라 Rendering Layer로 상태 그룹을 분리
                     renderingLayerMask = renderingLayerMask
                 };
                 return renderGraph.CreateRendererList(new RendererListParams(
@@ -175,6 +184,7 @@ namespace Phyzzle.Abilities.Attach
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             bool materialsValid = maskMaterial != null && compositeMaterial != null;
+            // SceneView/Overlay 카메라나 효과 Blend가 0인 프레임에서는 불필요한 마스크/Blit 패스를 만들지 않음
             if (!ShouldEnqueue(
                     renderingData.cameraData.cameraType,
                     renderingData.cameraData.renderType,

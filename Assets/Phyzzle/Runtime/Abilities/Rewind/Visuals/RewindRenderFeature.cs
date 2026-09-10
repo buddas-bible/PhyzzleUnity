@@ -59,12 +59,15 @@ namespace Phyzzle.Abilities.Rewind
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
                 UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+                // BackBuffer를 직접 사용하는 카메라는 source/destination 분리가 안 되므로 후처리 패스를 생략
                 if (maskMaterial == null || compositeMaterial == null ||
                     resourceData.isActiveTargetBackBuffer)
                 {
                     return;
                 }
 
+                // R/G/B에 Player Preserve/Eligible/Active 값을 저장할 독립 마스크를 생성
+                // 경계의 채널 값이 섞이지 않도록 Point 필터와 비 MSAA 텍스처를 사용
                 TextureDesc maskDescriptor =
                     renderGraph.GetTextureDesc(resourceData.activeColorTexture);
                 maskDescriptor.name = "Rewind Selection Mask";
@@ -83,6 +86,7 @@ namespace Phyzzle.Abilities.Rewind
                            "Rewind Selection Mask",
                            out MaskPassData passData))
                 {
+                    // 동일 Mask Shader의 세 Pass를 Rendering Layer별로 나눠 각각 다른 채널에 기록
                     passData.Player = CreateRendererList(
                         renderGraph,
                         frameData,
@@ -103,6 +107,7 @@ namespace Phyzzle.Abilities.Rewind
                     builder.UseRendererList(passData.Eligible);
                     builder.UseRendererList(passData.Active);
                     builder.SetRenderAttachment(mask, 0, AccessFlags.Write);
+                    // 기존 씬 Depth를 읽어 화면 앞쪽에 가려진 대상은 마스크에도 가려지도록 함
                     builder.SetRenderAttachmentDepth(
                         resourceData.activeDepthTexture,
                         AccessFlags.Read);
@@ -116,6 +121,7 @@ namespace Phyzzle.Abilities.Rewind
                 }
 
                 TextureHandle source = resourceData.activeColorTexture;
+                // 원본 화면을 읽으면서 같은 텍스처에 쓸 수 없으므로 합성 결과용 Color Texture를 따로 생성
                 TextureDesc destinationDescriptor = renderGraph.GetTextureDesc(source);
                 destinationDescriptor.name = "Rewind Composite Color";
                 destinationDescriptor.clearBuffer = false;
@@ -149,6 +155,7 @@ namespace Phyzzle.Abilities.Rewind
                     cameraData,
                     lightData,
                     cameraData.defaultOpaqueSortFlags);
+                // 대상의 원래 Material은 무시하고 상태 채널을 기록하는 Mask Material로 교체
                 drawingSettings.overrideMaterial = maskMaterial;
                 drawingSettings.overrideMaterialPassIndex = materialPass;
                 FilteringSettings filteringSettings = new(RenderQueueRange.all, -1)
@@ -210,6 +217,7 @@ namespace Phyzzle.Abilities.Rewind
             ref RenderingData renderingData)
         {
             bool materialsValid = maskMaterial != null && compositeMaterial != null;
+            // 게임의 Base 카메라에서 효과가 실제 보일 때만 RenderGraph 작업을 추가
             if (!ShouldEnqueue(
                     renderingData.cameraData.cameraType,
                     renderingData.cameraData.renderType,

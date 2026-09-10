@@ -50,6 +50,7 @@ Shader "Phyzzle/AttachContactPreview"
                 Varyings output;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+                // 서로 다른 두 공간 주파수의 sin 파형을 곱해 반복이 덜 보이는 표면 흔들림을 만들고 Normal 방향으로 변형
                 float ripple = sin(dot(input.positionOS.xyz, float3(8, 11, 6)) + _PreviewTime * 3.0)
                     * sin(dot(input.positionOS.xyz, float3(-5, 7, 9)) - _PreviewTime * 2.0);
                 float3 position = input.positionOS.xyz + input.normalOS * ripple * 0.018;
@@ -72,9 +73,12 @@ Shader "Phyzzle/AttachContactPreview"
                 float sceneDepth = ToEyeDepth(SampleSceneDepth(GetNormalizedScreenSpaceUV(input.positionCS)));
                 float fragmentDepth = ToEyeDepth(input.positionCS.z);
                 // A contact at the center of two faces is buried inside both meshes. Keep only a faint cue there.
+                // 프리뷰 메시가 실제 표면 뒤로 0.005~0.025 이상 묻힐수록 투명도를 12%까지 낮춰 내부 관통이 두드러지지 않게 함
                 float visibility = lerp(1.0, 0.12, smoothstep(0.005, 0.025, fragmentDepth - sceneDepth));
+                // 시선과 Normal이 수직에 가까울수록 rim 값을 키워 접촉 영역의 외곽을 강조
                 float facing = saturate(dot(normalize(input.normalWS), GetWorldSpaceNormalizeViewDir(input.positionWS)));
                 float rim = pow(1.0 - facing, 2.0);
+                // World 위치와 시간으로 흐르는 작은 밝기 노이즈를 추가해 정적인 접착 표시처럼 보이지 않게 함
                 float flow = sin(dot(input.positionWS, float3(7, 12, 5)) - _PreviewTime * 4.0) * 0.5 + 0.5;
                 float3 color = _ContactColor.rgb * (0.8 + rim * 0.35 + flow * 0.08);
                 float alpha = _ContactColor.a * (0.62 + rim * 0.3) * visibility;

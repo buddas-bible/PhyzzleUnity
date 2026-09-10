@@ -32,6 +32,8 @@ Shader "Hidden/Phyzzle/AttachMask"
         }
         ENDHLSL
 
+        // 하나의 RGB 마스크에 R=Eligible, G=Focused, B=Held 상태를 각각 기록
+        // RenderFeature에서 Rendering Layer별로 대응하는 Pass를 선택해 같은 텍스처에 그린다.
         Pass
         {
             Name "Eligible"
